@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Complete Purchase — Quantbit Technologies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1" rel="stylesheet" />
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: {
+            DEFAULT: '#0d0d82', // Rich Navy
+            light: '#1e293b',   // Muted Slate
+            dark: '#03033f',
+          },
+          accent: {
+            DEFAULT: '#ff6b00',
+            light: '#ff8533',
+            dark: '#cc5500',
+          },
+          success: '#10b981',
+          danger: '#dc2626',
+          borderCustom: '#e2e8f0',
+          bgLight: '#f6f6f8',
+          bgDark: '#101022',
+        },
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+        },
+        borderRadius: {
+          'sm-custom': '4px',
+          'lg-custom': '8px',
+          'xl-custom': '12px',
+          '2xl-custom': '16px',
+          '3xl-custom': '24px',
+        }
+      }
+    }
+  }
+</script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --blue: #0d0d82;
+  --blue-bright: #141496;
+  --cyan: #ff6b00;
+  --emerald: #10b981;
+  --red: #dc2626;
+  --fog: #64748b;
+  --mist: #475569;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f6f6f8;
+  color: #1e293b;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Cursor */
+.cursor-dot {
+  width: 8px;
+  height: 8px;
+  background: #ff6b00;
+  border-radius: 50%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: background 0.2s;
+}
+.cursor-ring {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(255, 107, 0, 0.5);
+  border-radius: 50%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+@media (max-width: 1024px) {
+  .cursor-dot, .cursor-ring {
+    display: none !important;
+  }
+}
+
+/* Background grid overlay */
+.grid-overlay {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.5s ease-out forwards;
+}
+
+/* Button Base Styles */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 200ms ease-in-out;
+  outline: none;
+  cursor: pointer;
+}
+.btn-base:active {
+  transform: scale(0.98);
+}
+.btn-base:focus {
+  outline: 2px solid #ff6b00;
+  outline-offset: 2px;
+}
+
+/* Button Variants */
+.btn-primary {
+  background-color: #0d0d82;
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background-color: #09095c;
+}
+
+.btn-accent {
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 14px 0 rgba(255, 107, 0, 0.3);
+}
+.btn-accent:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px 0 rgba(255, 107, 0, 0.5);
+}
+.btn-accent:active {
+  transform: scale(0.98);
+}
+
+.btn-outline {
+  border: 2px solid rgba(255, 107, 0, 0.2);
+  color: #ff6b00;
+  background-color: transparent;
+}
+.btn-outline:hover {
+  background-color: #ff6b00;
+  color: #ffffff;
+  border-color: #ff6b00;
+}
+
+.btn-ghost {
+  color: #ff6b00;
+  background-color: transparent;
+}
+.btn-ghost:hover {
+  background-color: rgba(255, 107, 0, 0.1);
+}
+
+/* Button Sizes */
+.btn-sm {
+  height: 32px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-radius: 4px;
+}
+.btn-md {
+  height: 40px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: 4px;
+}
+.btn-lg {
+  height: 44px;
+  padding-left: 24px;
+  padding-right: 24px;
+  border-radius: 8px;
+}
+.btn-xl {
+  height: 48px;
+  padding-left: 32px;
+  padding-right: 32px;
+  border-radius: 8px;
+}
+
+/* Shimmer Loading for inputs */
+.iw.loading input {
+  background: linear-gradient(90deg, rgba(46, 46, 217, 0.03) 25%, rgba(46, 46, 217, 0.08) 50%, rgba(46, 46, 217, 0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* Dynamic display toggles */
+.account-banner {
+  display: none;
+}
+.account-banner.show {
+  display: flex !important;
+}
+.account-error {
+  display: none;
+}
+.account-error.show {
+  display: flex !important;
+}
+.billing-details-card {
+  display: none;
+}
+.billing-details-card.show {
+  display: block !important;
+}
+.auto-badge {
+  display: none;
+}
+.auto-badge.show {
+  display: inline-flex !important;
+}
+
+/* Auto filled and readonly */
+input.auto-filled {
+  background-color: rgba(16, 185, 129, 0.04) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #0f172a !important;
+}
+input.auto-filled:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+input[readonly] {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+  cursor: default;
+}
+
+/* Coupon success modal */
+.coupon-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 15, 189, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 99999;
+}
+.coupon-success-card {
+  width: 380px;
+  padding: 32px;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 30px 80px rgba(15, 15, 189, 0.15), 0 0 40px rgba(15, 15, 189, 0.05);
+  text-align: center;
+  animation: popupReveal 0.45s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+.coupon-success-icon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  animation: sparkle 1s infinite alternate;
+}
+@keyframes sparkle {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+.coupon-success-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f0fbd;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.coupon-success-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+.coupon-success-pricebox {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 24px;
+}
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 8px;
+}
+.price-row.discount {
+  color: #10b981;
+  font-weight: 600;
+}
+.price-row.final {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f0fbd;
+  margin-bottom: 0;
+}
+.divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 12px 0;
+}
+.coupon-success-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: white;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px 0 rgba(255, 107, 0, 0.3);
+  transition: all 0.25s ease;
+}
+.coupon-success-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 rgba(255, 107, 0, 0.5);
+}
+.coupon-success-btn:active {
+  transform: scale(0.98);
+}
+@keyframes popupReveal {
+  from { opacity: 0; transform: scale(0.75) translateY(20px); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Success Celebration Modal */
+.success-celebration {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 15, 189, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 99999;
+  animation: fadeCelebration 0.3s ease both;
+}
+.success-card {
+  background: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 28px;
+  padding: 48px 40px;
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 30px 80px rgba(15, 15, 189, 0.15), 0 0 60px rgba(15, 15, 189, 0.05);
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  position: relative;
+  overflow: hidden;
+}
+.success-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+  display: inline-block;
+  animation: iconBounce 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+}
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+.success-card h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0f0fbd;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+.success-card .subtitle {
+  color: #64748b;
+  font-size: 15px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+.invoice-info {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+.invoice-info .label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+.invoice-info .value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f0fbd;
+  word-break: break-all;
+}
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.success-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.success-btn.primary {
+  background: linear-gradient(135deg, #ff6b00 0%, #ff8533 100%);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(255, 107, 0, 0.3);
+}
+.success-btn.primary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px 0 rgba(255, 107, 0, 0.5);
+}
+.success-btn.secondary {
+  background: #0d0d82;
+  color: white;
+}
+.success-btn.secondary:hover {
+  opacity: 0.9;
+}
+.success-btn.ghost {
+  background: transparent;
+  color: #ff6b00;
+}
+.success-btn.ghost:hover {
+  background: rgba(255, 107, 0, 0.1);
+}
+
+@keyframes fadeCelebration { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+
+/* Sidebar details token list */
+.ps-token-table {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 107, 0, 0.2);
+}
+.ps-token-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255, 107, 0, 0.1);
+  background: rgba(255, 107, 0, 0.02);
+  font-size: 12px;
+}
+.ps-token-row:last-child {
+  border-bottom: none;
+}
+.ps-token-row:nth-child(even) {
+  background: rgba(255, 107, 0, 0.05);
+}
+.ps-token-doc {
+  color: #475569;
+  font-weight: 500;
+  flex: 1;
+}
+.ps-token-num {
+  background: rgba(255, 107, 0, 0.1);
+  color: #cc5500;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* Remove button style override */
+.remove-mode {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  color: white !important;
+}
+.remove-mode:hover {
+  opacity: 0.9 !important;
+  box-shadow: 0 4px 12px 0 rgba(220, 38, 38, 0.25) !important;
+}
+
+/* Stepper state logic classes */
+.step.done {
+  color: #10b981;
+}
+.step.done .step-num {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+  color: #10b981;
+}
+.step.active {
+  color: #0d0d82;
+}
+.step.active .step-num {
+  background-color: rgba(13, 13, 130, 0.1);
+  border-color: #0d0d82;
+  color: #0d0d82;
+  box-shadow: 0 0 10px rgba(13, 13, 130, 0.2);
+}
+
+/* Confetti particles */
+.confetti {
+  position: fixed; width: 10px; height: 10px; pointer-events: none;
+  border-radius: 50%; z-index: 10000;
+}
+@keyframes confettiFall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+</style>
+</head>
+<body class="bg-[#f6f6f8]">
+
+<!-- Custom Interactive Cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Ambient Background Hero Section -->
+<div class="relative w-full overflow-hidden bg-gradient-to-b from-[#0b0f19] to-[#0e1322] pb-16 pt-5">
+  <div class="grid-overlay"></div>
+  
+  <!-- Glowing Orbs (StrideNex fluid designs) -->
+  <div class="absolute -top-12 -right-12 w-[250px] h-[250px] bg-accent/5 blur-3xl pointer-events-none rounded-[60%_40%_30%_70%_/_60%_30%_70%_40%] animate-float"></div>
+  <div class="absolute bottom-0 left-[-50px] w-[180px] h-[180px] bg-accent-light/5 blur-3xl pointer-events-none rounded-[40%_60%_70%_30%_/_50%_60%_30%_70%]" style="animation: float 8s ease-in-out infinite alternate;"></div>
+
+  <!-- ═══ NAVBAR ═══ -->
+  <nav class="navbar max-w-7xl mx-auto px-6 flex items-center justify-between relative z-10" id="navbar">
+    <a class="logo flex items-center cursor-pointer">
+      <img src="/assets/quantbit_payments_platform/img/Logo%20jpg%20file.jpg" alt="Logo" class="h-10 w-auto rounded-lg object-contain bg-white p-1 shadow-sm" />
+    </a>
+    <a id="backLink" style="display: none;" href="plans.html"></a>
+  </nav>
+
+  <!-- Hero Titles -->
+  <div class="max-w-7xl mx-auto px-6 mt-6 text-center relative z-10 text-white animate-slide-up">
+    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Complete Your Payment</h1>
+    <p class="text-white/60 text-xs mt-1.5 max-w-md mx-auto">Fill in the quick details below to authorize payment securely.</p>
+  </div>
+</div>
+
+<!-- ═══ NO PARAM ERROR ═══ -->
+<div id="noParamError" style="display: none;">
+  <div class="max-w-md mx-auto my-20 p-8 bg-white/90 border border-white/50 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/80 text-center animate-slide-up">
+    <span class="material-symbols-outlined text-5xl text-accent mb-4 block">receipt_long</span>
+    <h2 class="text-2xl font-extrabold text-primary mb-2 tracking-tight">No Plan Selected</h2>
+    <p class="text-slate-500 mb-6 leading-relaxed">Please go back and choose a billing plan before proceeding to checkout.</p>
+    <a href="plans.html" class="btn-base btn-accent btn-md rounded-lg font-bold">
+      <span class="material-symbols-outlined text-sm mr-2 font-bold">arrow_back</span>
+      Browse Plans
+    </a>
+  </div>
+</div>
+
+<!-- ═══ MAIN PAGE ═══ -->
+<div class="max-w-5xl mx-auto px-6 -mt-8 pb-16 relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start" id="mainPage">
+
+  <!-- ── PLAN SUMMARY SIDEBAR ── -->
+  <aside class="plan-summary lg:col-span-4 bg-white/90 border border-white/50 backdrop-blur-md rounded-2xl shadow-xl shadow-slate-200/80 overflow-hidden transition-all duration-300">
+    <div class="ps-top p-4 bg-gradient-to-br from-primary to-primary-light text-white relative overflow-hidden">
+      <div class="ps-glow absolute -top-16 -left-16 w-40 h-40 rounded-full bg-white/5 blur-2xl"></div>
+      <div class="ps-label text-[9px] font-bold tracking-widest uppercase text-white/70 mb-1">Your Selected Plan</div>
+      <div class="ps-name text-xl font-extrabold tracking-tight" id="psName">—</div>
+      <div class="ps-tags flex flex-wrap gap-1 mt-2" id="psTags"></div>
+    </div>
+    <div class="ps-body p-4 space-y-2.5">
+      <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psTypeRow">
+        <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
+          <span class="material-symbols-outlined text-base text-primary-light">widgets</span>
+          Package Type
+        </span>
+        <span class="ps-row-val text-xs font-semibold text-primary" id="psType">—</span>
+      </div>
+      <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psUsersRow">
+        <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
+          <span class="material-symbols-outlined text-base text-primary-light">group</span>
+          Max Users
+        </span>
+        <span class="ps-row-val text-xs font-semibold text-slate-700" id="psUsers">—</span>
+      </div>
+      <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psDaysRow">
+        <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
+          <span class="material-symbols-outlined text-base text-primary-light">calendar_today</span>
+          Validity
+        </span>
+        <span class="ps-row-val text-xs font-semibold text-slate-700" id="psDays">—</span>
+      </div>
+      <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psAppRow">
+        <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
+          <span class="material-symbols-outlined text-base text-primary-light">deployed_code</span>
+          Application
+        </span>
+        <span class="ps-row-val text-xs font-semibold text-slate-700" id="psApp">—</span>
+      </div>
+      <div class="ps-price-row bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/10 rounded-xl p-3 flex justify-between items-center mt-4">
+        <span class="ps-price-label text-[10px] font-bold uppercase tracking-wider text-primary">Total Price</span>
+        <span class="ps-price-val text-xl font-black text-primary" id="psTotalPrice">—</span>
+      </div>
+      <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psDurationRow" style="display:none">
+        <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
+          <span class="material-symbols-outlined text-base text-primary-light">schedule</span>
+          Duration
+        </span>
+        <span class="ps-row-val text-xs font-semibold text-slate-700" id="psDuration">—</span>
+      </div>
+      <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psPerDayRow" style="display:none">
+        <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
+          <span class="material-symbols-outlined text-base text-primary-light">currency_rupee</span>
+          Approx. per day
+        </span>
+        <span class="ps-row-val text-xs font-semibold text-slate-700" id="psPerDay">—</span>
+      </div>
+      <div class="ps-token-section mt-4" id="psTokenSection" style="display:none">
+        <div class="ps-token-title text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Token Usage per Request</div>
+        <div class="ps-token-table rounded-xl overflow-hidden border border-slate-200" id="psTokenTable"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── CHECKOUT FORM PANEL ── -->
+  <div class="checkout lg:col-span-8 bg-white/95 border border-white rounded-2xl shadow-2xl shadow-slate-200/90 overflow-hidden transition-all duration-300">
+    <div class="co-top p-4 sm:p-5 border-b border-slate-100 bg-gradient-to-b from-slate-50/50 to-white">
+      
+      <!-- Stepper Progress -->
+      <div class="steps flex items-center justify-between mb-5 pb-3 border-b border-slate-100">
+        <div class="step done flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-success">
+          <span class="step-num w-6 h-6 rounded-full bg-success/10 border-2 border-success flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-xs">check</span>
+          </span>
+          <span class="hidden sm:inline">Plan Selected</span>
+        </div>
+        <div class="step-line flex-1 h-0.5 bg-slate-200 mx-3"></div>
+        <div class="step active flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-primary">
+          <span class="step-num w-6 h-6 rounded-full bg-primary/10 border-2 border-primary-light flex items-center justify-center font-bold shadow-md shadow-primary/20">
+            2
+          </span>
+          <span class="hidden sm:inline">Your Details</span>
+        </div>
+        <div class="step-line flex-1 h-0.5 bg-slate-200 mx-3"></div>
+        <div class="step flex items-center gap-1.5 text-[10px] font-bold tracking-wider uppercase text-slate-400">
+          <span class="step-num w-6 h-6 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center font-bold">
+            3
+          </span>
+          <span class="hidden sm:inline">Payment</span>
+        </div>
+      </div>
+
+      <h2 class="text-xl font-black text-primary tracking-tight">Complete Your Purchase</h2>
+      <p class="text-slate-500 text-xs mt-0.5">You're one step away — fill in your details to proceed.</p>
+    </div>
+
+    <div class="co-body p-4 sm:p-5">
+      <form id="paymentForm">
+
+        <!-- Account Type Selection -->
+        <div class="grid grid-cols-1 gap-4 mb-4">
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
+              <span>Account Type <span class="text-red-500">*</span></span>
+            </label>
+            <div class="iw relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">badge</span>
+              <select id="accountType" required class="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-medium">
+                <option value="" disabled selected>Select Account Type</option>
+                <option value="Student">Student</option>
+                <option value="Mentor">Mentor</option>
+                <option value="Industry">Industry</option>
+                <option value="Collage">College</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email search -->
+        <div class="text-[10px] font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+          Select Billing Account
+          <span class="flex-1 h-px bg-slate-100"></span>
+        </div>
+        <div class="grid grid-cols-1 gap-4 mb-4">
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
+              Email address to find account
+            </label>
+            <div class="iw loading relative flex items-center" id="iwEmailSelect">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">mail</span>
+              <input type="email" id="emailSelect" placeholder="Enter email to find your billing account" class="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-medium" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal info -->
+        <div class="text-[10px] font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+          Personal Information
+          <span class="flex-1 h-px bg-slate-100"></span>
+        </div>
+
+        <!-- Auto Fill banner -->
+        <div class="account-banner items-center gap-3 p-3 bg-success/5 border border-success/20 rounded-xl mb-4 animate-slide-up" id="accountBanner">
+          <span class="material-symbols-outlined text-success text-lg">check_circle</span>
+          <span class="text-xs text-slate-600 font-medium flex-1">Auto-filled from your <strong class="text-slate-800">Billing Account</strong></span>
+          <button type="button" class="account-banner-edit btn-base btn-ghost btn-sm text-accent hover:text-accent-dark font-semibold text-[10px] tracking-wider uppercase" onclick="enableEdit()">Edit</button>
+        </div>
+
+        <!-- Auto Fill error -->
+        <div class="account-error items-center gap-3 p-3 bg-danger/5 border border-danger/20 rounded-xl mb-4 text-danger text-xs font-medium animate-slide-up" id="accountError">
+          <span class="material-symbols-outlined text-danger text-lg">error</span>
+          <span id="accountErrorMsg">Could not load account details. Please fill in manually.</span>
+        </div>
+
+        <!-- Billing address card -->
+        <div class="billing-details-card bg-slate-50 border border-slate-100 rounded-xl p-4 mb-4 animate-slide-up" id="billingDetailsCard">
+          <div class="billing-details-header flex items-center gap-2 pb-2 mb-3 border-b border-slate-200/50">
+            <span class="material-symbols-outlined text-success text-lg">location_on</span>
+            <h3 class="billing-details-title text-[10px] font-bold uppercase tracking-wider text-success m-0">Billing Address Details</h3>
+          </div>
+          <div class="billing-details-content grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="billing-detail-item col-span-1 md:col-span-2">
+              <span class="billing-detail-label text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Company Address</span>
+              <span class="billing-detail-value text-xs font-medium text-slate-700" id="billingAddress">—</span>
+            </div>
+            <div class="billing-detail-item">
+              <span class="billing-detail-label text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">State</span>
+              <span class="billing-detail-value text-xs font-medium text-slate-700" id="billingState">—</span>
+            </div>
+            <div class="billing-detail-item">
+              <span class="billing-detail-label text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">City</span>
+              <span class="billing-detail-value text-xs font-medium text-slate-700" id="billingCity">—</span>
+            </div>
+            <div class="billing-detail-item">
+              <span class="billing-detail-label text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Pincode</span>
+              <span class="billing-detail-value text-xs font-medium text-slate-700" id="billingPincode">—</span>
+            </div>
+            <div class="billing-detail-item">
+              <span class="billing-detail-label text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">Address Type</span>
+              <span class="billing-detail-value text-xs font-medium text-slate-700" id="billingAddressType">—</span>
+            </div>
+            <div class="billing-detail-item" id="billingGSTINDisplay" style="display:none">
+              <span class="billing-detail-label text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-0.5">GSTIN</span>
+              <span class="billing-detail-value text-xs font-medium text-slate-700" id="billingGSTIN">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hidden billing fields -->
+        <input type="hidden" id="billingAddressHidden" value="">
+        <input type="hidden" id="billingStateHidden" value="">
+        <input type="hidden" id="billingCityHidden" value="">
+        <input type="hidden" id="billingPincodeHidden" value="">
+        <input type="hidden" id="billingAddressTypeHidden" value="">
+        <input type="hidden" id="billingGSTINHidden" value="">
+
+        <!-- GSTIN input (shown when not from account) -->
+        <div class="grid grid-cols-1 gap-4 mb-4" id="gstinInputSection" style="display:none">
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
+              <span>GSTIN (if applicable)</span>
+              <span class="auto-badge bg-success/10 text-success border border-success/20 rounded-full px-2 py-0.5 text-[9px]" id="badgeGSTIN">
+                <span class="material-symbols-outlined text-[9px] mr-1 align-middle">check</span>Verified
+              </span>
+            </label>
+            <div class="iw relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">corporate_fare</span>
+              <input type="text" id="gstinInput" placeholder="Enter GSTIN (15 characters)" maxlength="15" class="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-medium" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Name / Email / Company -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
+              <span>Full Name <span class="text-red-500">*</span></span>
+              <span class="auto-badge bg-success/10 text-success border border-success/20 rounded-full px-2 py-0.5 text-[9px]" id="badgeName">
+                <span class="material-symbols-outlined text-[9px] mr-1 align-middle">check</span>Auto
+              </span>
+            </label>
+            <div class="iw loading relative flex items-center" id="iwName">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">person</span>
+              <input type="text" id="fullName" placeholder="Rahul Sharma" required class="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-medium" />
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
+              <span>Email Address <span class="text-red-500">*</span></span>
+              <span class="auto-badge bg-success/10 text-success border border-success/20 rounded-full px-2 py-0.5 text-[9px]" id="badgeEmail">
+                <span class="material-symbols-outlined text-[9px] mr-1 align-middle">check</span>Auto
+              </span>
+            </label>
+            <div class="iw loading relative flex items-center" id="iwEmail">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">mail</span>
+              <input type="email" id="emailAddr" placeholder="you@company.com" required class="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-medium" />
+            </div>
+          </div>
+          <div class="flex flex-col md:col-span-2" id="companySectionContainer">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1 flex items-center justify-between">
+              <span>Company / Organisation</span>
+              <span class="auto-badge bg-success/10 text-success border border-success/20 rounded-full px-2 py-0.5 text-[9px]" id="badgeCompany">
+                <span class="material-symbols-outlined text-[9px] mr-1 align-middle">check</span>Auto
+              </span>
+            </label>
+            <div class="iw loading relative flex items-center" id="iwCompany">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">domain</span>
+              <input type="text" id="company" placeholder="Acme Pvt. Ltd." class="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-medium" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Order summary -->
+        <div class="text-[10px] font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+          Order Summary
+          <span class="flex-1 h-px bg-slate-100"></span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Selected Package</label>
+            <div class="iw relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">inventory_2</span>
+              <input type="text" id="package" placeholder="—" readonly class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-600 focus:outline-none cursor-default text-sm font-semibold" />
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Amount</label>
+            <div class="iw relative flex items-center">
+              <span class="material-symbols-outlined absolute left-3 text-slate-400 pointer-events-none text-lg">payments</span>
+              <input type="text" id="amount" placeholder="—" readonly class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-slate-600 focus:outline-none cursor-default text-sm font-semibold" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Referral Section -->
+        <div id="referralSection" style="display:none;" class="mb-5">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+            Referral Code (Optional)
+            <span class="flex-1 h-px bg-slate-100"></span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="referralCode" placeholder="Enter referral code" class="flex-1 px-3.5 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-semibold" />
+            <button type="button" id="applyReferralBtn" class="btn-base btn-primary btn-md rounded-xl px-5 font-bold shadow-md shadow-primary/10 hover:opacity-90">VERIFY</button>
+          </div>
+          <div id="referralMessage" class="text-xs mt-1.5 font-medium"></div>
+        </div>
+
+        <!-- Coupon Section -->
+        <div id="couponSection" style="display:none;" class="mb-5">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-primary mb-3 flex items-center gap-2">
+            Apply Coupon
+            <span class="flex-1 h-px bg-slate-100"></span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="couponCode" placeholder="Enter coupon code" class="flex-1 px-3.5 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-primary-light focus:ring-2 focus:ring-primary/10 transition-all duration-200 text-sm font-semibold" />
+            <button type="button" id="applyCouponBtn" class="btn-base btn-primary btn-md rounded-xl px-5 font-bold shadow-md shadow-primary/10 hover:opacity-90">APPLY</button>
+          </div>
+          <div id="couponMessage" class="text-xs mt-1.5 font-medium"></div>
+
+          <!-- Coupon Breakdown -->
+          <div id="couponBreakdown" style="display:none;" class="bg-success/5 border border-success/20 p-3 rounded-xl text-xs mt-2.5 animate-slide-up space-y-2">
+            <div class="flex justify-between text-slate-500 font-medium">
+              <span>Original Amount:</span>
+              <strong id="bdOriginal" class="text-slate-700"></strong>
+            </div>
+            <div class="flex justify-between text-success font-bold">
+              <span>Discount:</span>
+              <strong id="bdDiscount"></strong>
+            </div>
+            <div class="h-px bg-success/20 my-1"></div>
+            <div class="flex justify-between text-primary font-extrabold text-sm">
+              <span>Final Amount:</span>
+              <span id="bdFinal"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Pay -->
+        <div class="submit-row flex flex-col gap-3 mt-4">
+          <button type="submit" class="pay-btn btn-base btn-accent btn-xl w-full font-bold text-sm shadow-xl hover:shadow-accent/40 rounded-xl" id="payButton">
+            <span class="material-symbols-outlined text-lg">credit_card</span>
+            Proceed to Payment
+          </button>
+          <div class="ssl flex items-center justify-center gap-2 text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
+            <span class="material-symbols-outlined text-success text-base font-bold">lock</span>
+            Secured by Quantbit 
+          </div>
+        </div>
+        <div id="paymentStatus" class="mt-3 text-center text-xs font-semibold tracking-wide uppercase"></div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+<script>
+// ================================================
+// UPDATED SCRIPT - Dynamic Site + Session
+// ================================================
+
+/* ── CURSOR ── */
+const _dot = document.getElementById('cursorDot');
+const _ring = document.getElementById('cursorRing');
+let _mx=0, _my=0, _rx=0, _ry=0;
+document.addEventListener('mousemove', e => { _mx = e.clientX; _my = e.clientY; });
+(function aC() {
+    _rx += (_mx - _rx) * 0.15;
+    _ry += (_my - _ry) * 0.15;
+    if(_dot) _dot.style.left = _mx + 'px';
+    if(_dot) _dot.style.top = _my + 'px';
+    if(_ring) _ring.style.left = _rx + 'px';
+    if(_ring) _ring.style.top = _ry + 'px';
+    requestAnimationFrame(aC);
+})();
+function addCH(el) {
+    if (!el) return;
+    el.addEventListener('mouseenter', () => {
+        if(_ring) { _ring.style.width = '52px'; _ring.style.height = '52px'; }
+        if(_dot) _dot.style.background = '#ff8533';
+    });
+    el.addEventListener('mouseleave', () => {
+        if(_ring) { _ring.style.width = '36px'; _ring.style.height = '36px'; }
+        if(_dot) _dot.style.background = '#ff6b00';
+    });
+}
+['payButton', 'backLink'].forEach(id => addCH(document.getElementById(id)));
+
+/* ── NAVBAR SCROLL ── */
+window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 30);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    const currentSite = window.location.origin;   // Dynamic current site
+
+    const params = new URLSearchParams(window.location.search);
+    const pkgName   = params.get('pkg_name');
+    const pkgType   = params.get('pkg_type') || '';
+    const pkgApp    = params.get('pkg_app') || '';
+    const pkgUsers  = params.get('pkg_users');
+    const pkgDays   = params.get('pkg_days');
+    const pkgAmount = params.get('pkg_amount') || 'TBD';
+    const rawFromSite = params.get('from_site') || currentSite;
+    const fromSite = (rawFromSite && !rawFromSite.startsWith('http://') && !rawFromSite.startsWith('https://')) ? 'https://' + rawFromSite : rawFromSite;
+    const sysUrl = params.get('sys_url') || '';
+
+    console.log("DEBUG: URL Parameters:");
+    console.log("  pkg_name:", pkgName);
+    console.log("  pkg_type:", pkgType);
+    console.log("  pkg_amount:", pkgAmount);
+    console.log("  pkg_days:", pkgDays);
+    console.log("  from_site from URL:", params.get('from_site'));
+    console.log("  currentSite:", currentSite);
+    console.log("  fromSite (final):", fromSite);
+    console.log("  Full URL:", window.location.href);
+
+    if (!pkgName) {
+        document.getElementById('mainPage').style.display = 'none';
+        document.getElementById('noParamError').style.display = 'block';
+        return;
+    }
+
+    // Back link
+    const backLink = document.getElementById('backLink');
+    if (backLink) backLink.href = `plans.html?from_site=${encodeURIComponent(fromSite)}`;
+
+    // Fill Plan Summary (unchanged logic)
+    document.getElementById('psName').textContent = pkgName;
+    document.getElementById('package').value = pkgName;
+
+    const isTokenBased = pkgType === 'Token Based';
+    const hasDays = pkgDays && parseInt(pkgDays) > 0 && !isTokenBased;
+
+    let totalStr = 'Contact us', durationStr = '', perDayStr = '';
+    if (pkgAmount && pkgAmount !== 'TBD') {
+        const amt = parseFloat(pkgAmount);
+        totalStr = `₹${amt.toLocaleString('en-IN')}`;
+        if (hasDays) {
+            const days = parseInt(pkgDays);
+            durationStr = `${days} days`;
+            if (amt > 0 && days > 0) perDayStr = `≈ ₹${Math.round(amt/days*100)/100}/day`;
+        } else if (isTokenBased) {
+            durationStr = 'Usage-based';
+            perDayStr = 'No fixed validity';
+        }
+    }
+
+    document.getElementById('psTotalPrice').textContent = totalStr;
+    document.getElementById('amount').value = totalStr + (durationStr ? ` (${durationStr})` : '');
+
+    if (hasDays || isTokenBased) {
+        document.getElementById('psDurationRow').style.display = '';
+        document.getElementById('psDuration').textContent = durationStr;
+        if (perDayStr) {
+            document.getElementById('psPerDayRow').style.display = '';
+            document.getElementById('psPerDay').textContent = perDayStr;
+        }
+    }
+    if (hasDays) {
+        document.getElementById('psDays').textContent = durationStr;
+        document.getElementById('psDaysRow').style.display = '';
+    } else document.getElementById('psDaysRow').style.display = 'none';
+
+    if (pkgUsers !== null && pkgUsers !== '') {
+        const u = parseInt(pkgUsers);
+        document.getElementById('psUsers').textContent = u >= 100000 ? 'Unlimited' : u.toLocaleString();
+    } else document.getElementById('psUsersRow').style.display = 'none';
+
+    if (pkgApp) document.getElementById('psApp').textContent = pkgApp;
+    else document.getElementById('psAppRow').style.display = 'none';
+
+    document.getElementById('psType').textContent = pkgType || '—';
+
+    // Tags
+    const psTags = document.getElementById('psTags');
+    if (psTags) {
+        [pkgType && { cls: isTokenBased ? 'tok' : '', label: pkgType },
+         pkgApp && { cls: '', label: pkgApp }]
+            .filter(Boolean).forEach(({ cls, label }) => {
+                const tag = document.createElement('span');
+                tag.className = `ps-tag ${cls}`.trim();
+                tag.textContent = label.replace(/_/g,' ').toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
+                psTags.appendChild(tag);
+            });
+    }
+
+    // Auto-fill logic
+    let allBillingAccounts = [];
+    let currentSelectedAccount = null;
+
+    function stopShimmer() {
+        ['iwName','iwEmail','iwCompany'].forEach(id => document.getElementById(id)?.classList.remove('loading'));
+    }
+    function stopShimmerEmailSelect() {
+        document.getElementById('iwEmailSelect')?.classList.remove('loading');
+    }
+
+    function showAutoFillSuccess() {
+        document.getElementById('accountBanner')?.classList.add('show');
+        document.getElementById('accountBanner')?.classList.remove('hidden');
+        document.getElementById('accountBanner')?.classList.add('flex');
+        ['badgeName','badgeEmail','badgeCompany'].forEach(id => {
+            document.getElementById(id)?.classList.add('show');
+            document.getElementById(id)?.classList.remove('hidden');
+        });
+        ['fullName','emailAddr','company'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !el.hasAttribute('data-manual-edit')) {
+                el.classList.add('auto-filled');
+                el.readOnly = true;
+            }
+        });
+    }
+
+    function showAutoFillError(msg) {
+        const banner = document.getElementById('accountError');
+        const msgEl = document.getElementById('accountErrorMsg');
+        if (msgEl) msgEl.textContent = msg || 'Could not load account details. Please fill manually.';
+        if (banner) {
+            banner.classList.add('show');
+            banner.classList.remove('hidden');
+            banner.classList.add('flex');
+        }
+    }
+
+    function enableEdit() {
+        ['fullName','emailAddr','company'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.readOnly = false;
+                el.classList.remove('auto-filled');
+                el.removeAttribute('data-manual-edit');
+            }
+        });
+        const banner = document.getElementById('accountBanner');
+        if(banner) {
+            banner.classList.remove('show');
+            banner.classList.add('hidden');
+            banner.classList.remove('flex');
+        }
+        const billingCard = document.getElementById('billingDetailsCard');
+        if(billingCard) {
+            billingCard.classList.remove('show');
+            billingCard.classList.add('hidden');
+        }
+        ['badgeName','badgeEmail','badgeCompany'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('show');
+                el.classList.add('hidden');
+            }
+        });
+        document.getElementById('emailSelect').value = '';
+        currentSelectedAccount = null;
+        updateAccountTypeUI();
+    }
+    window.enableEdit = enableEdit;
+
+    function populateBillingDetails(accountData) {
+        const card = document.getElementById('billingDetailsCard');
+        document.getElementById('billingAddressHidden').value = accountData.company_address || '';
+        document.getElementById('billingStateHidden').value = accountData.state || '';
+        document.getElementById('billingCityHidden').value = accountData.city || '';
+        document.getElementById('billingPincodeHidden').value = accountData.pincode || '';
+        document.getElementById('billingAddressTypeHidden').value = accountData.address_type || 'Billing';
+
+        let hasData = false;
+        const fields = [
+            ['billingAddress', accountData.company_address],
+            ['billingState', accountData.state],
+            ['billingCity', accountData.city],
+            ['billingPincode', accountData.pincode],
+            ['billingAddressType', accountData.address_type]
+        ];
+        fields.forEach(([id, val]) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = val && val.trim() ? val : '—';
+                if (val && val.trim()) hasData = true;
+            }
+        });
+
+        if (accountData.gstin && accountData.gstin.trim()) {
+            document.getElementById('billingGSTIN').textContent = accountData.gstin;
+            document.getElementById('billingGSTINHidden').value = accountData.gstin;
+            document.getElementById('billingGSTINDisplay').style.display = '';
+            document.getElementById('gstinInputSection').style.display = 'none';
+            hasData = true;
+        } else {
+            document.getElementById('billingGSTINDisplay').style.display = 'none';
+            document.getElementById('billingGSTINHidden').value = '';
+            document.getElementById('gstinInputSection').style.display = '';
+        }
+
+        if (hasData && card) {
+            const accType = document.getElementById('accountType')?.value || '';
+            if (accType === 'Student' || accType === 'Mentor' || !accType) {
+                card.classList.remove('show');
+                card.classList.add('hidden');
+                card.style.display = 'none';
+            } else {
+                card.style.display = '';
+                card.classList.add('show');
+                card.classList.remove('hidden');
+            }
+        }
+    }
+
+    // Email filter
+    let filterTimeout;
+    document.getElementById('emailSelect')?.addEventListener('input', function(e) {
+        clearTimeout(filterTimeout);
+        const emailInput = e.target.value.trim().toLowerCase();
+        
+        const accErr = document.getElementById('accountError');
+        if(accErr) {
+            accErr.classList.remove('show');
+            accErr.classList.add('hidden');
+            accErr.classList.remove('flex');
+        }
+        
+        const billCard = document.getElementById('billingDetailsCard');
+        if(billCard) {
+            billCard.classList.remove('show');
+            billCard.classList.add('hidden');
+        }
+
+        if (!emailInput) {
+            const banner = document.getElementById('accountBanner');
+            if(banner) {
+                banner.classList.remove('show');
+                banner.classList.add('hidden');
+                banner.classList.remove('flex');
+            }
+            ['badgeName','badgeEmail','badgeCompany'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.classList.remove('show');
+                    el.classList.add('hidden');
+                }
+            });
+            enableEdit(); return;
+        }
+
+        filterTimeout = setTimeout(() => {
+            const matched = allBillingAccounts.find(acc => (acc.email || acc.name || '').toLowerCase().includes(emailInput));
+            if (matched) {
+                currentSelectedAccount = matched;
+                if (matched.full_name) document.getElementById('fullName').value = matched.full_name;
+                if (matched.email) {
+                      document.getElementById('emailAddr').value = matched.email;
+                      toggleCouponVisibility();
+                }
+                if (matched.company) document.getElementById('company').value = matched.company;
+
+                ['fullName','emailAddr','company'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) { el.classList.add('auto-filled'); el.readOnly = true; }
+                });
+                showAutoFillSuccess();
+                populateBillingDetails(matched);
+                updateAccountTypeUI();
+            } else {
+                const errBanner = document.getElementById('accountError');
+                if (errBanner) {
+                    errBanner.classList.add('show');
+                    errBanner.classList.remove('hidden');
+                    errBanner.classList.add('flex');
+                }
+                enableEdit();
+            }
+        }, 300);
+    });
+
+    // Fetch Billing Accounts using current session
+    async function fetchBillingAccounts() {
+        if (!fromSite) {
+            stopShimmerEmailSelect();
+            showAutoFillError('No site configured — please fill manually.');
+            return;
+        }
+        try {
+            const res = await fetch(`${fromSite}/api/method/quantbit_billing_platform.get_billing_package.get_billing_account_details`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: { Accept: 'application/json' }
+            });
+
+            stopShimmerEmailSelect();
+            if (!res.ok) {
+                showAutoFillError(res.status === 401 || res.status === 403
+                    ? 'Please log in to your Quantbit account to auto-fill details.'
+                    : `Server error (${res.status}). Please fill manually.`);
+                return;
+            }
+            const data = await res.json();
+            let accounts = [];
+            if (Array.isArray(data.message)) {
+                accounts = data.message.map(raw => ({
+                    name: raw.name || '', full_name: raw.full_name || '',
+                    email: raw.name || raw.email || '', company: raw.company || '',
+                    company_address: raw.company_address || '', state: raw.state || '',
+                    city: raw.city || '', pincode: raw.pincode || '',
+                    address_type: raw.address_type || '', gstin: raw.gstin || ''
+                }));
+            }
+            if (!accounts.length) {
+                showAutoFillError('No billing accounts found. Please fill manually.');
+                return;
+            }
+            allBillingAccounts = accounts;
+        } catch (err) {
+            stopShimmerEmailSelect();
+            showAutoFillError('Could not reach server. Please fill manually.');
+            console.error(err);
+        }
+    }
+
+    fetchBillingAccounts();
+    stopShimmer();
+
+    function updateAccountTypeUI() {
+        const accType = document.getElementById('accountType').value;
+        const companySec = document.getElementById('companySectionContainer');
+        const gstinInputSec = document.getElementById('gstinInputSection');
+        const billingCard = document.getElementById('billingDetailsCard');
+
+        if (accType === 'Student' || accType === 'Mentor') {
+            if (companySec) companySec.style.display = 'none';
+            if (gstinInputSec) gstinInputSec.style.display = 'none';
+            if (billingCard) {
+                billingCard.style.display = 'none';
+                billingCard.classList.remove('show');
+                billingCard.classList.add('hidden');
+            }
+            // Clear inputs so they aren't submitted
+            const companyInput = document.getElementById('company');
+            if (companyInput) companyInput.value = '';
+            const gstinInput = document.getElementById('gstinInput');
+            if (gstinInput) gstinInput.value = '';
+            
+            document.getElementById('billingAddressHidden').value = '';
+            document.getElementById('billingStateHidden').value = '';
+            document.getElementById('billingCityHidden').value = '';
+            document.getElementById('billingPincodeHidden').value = '';
+            document.getElementById('billingAddressTypeHidden').value = 'Billing';
+            document.getElementById('billingGSTINHidden').value = '';
+        } else if (accType === 'Industry' || accType === 'Collage') {
+            // Industry or Collage
+            if (companySec) companySec.style.display = '';
+            
+            if (currentSelectedAccount) {
+                if (currentSelectedAccount.company) {
+                    document.getElementById('company').value = currentSelectedAccount.company;
+                }
+                populateBillingDetails(currentSelectedAccount);
+            } else {
+                // Only show GSTIN input if there's no auto-filled GSTIN already displayed
+                const billingGSTINDisplay = document.getElementById('billingGSTINDisplay');
+                if (billingGSTINDisplay && billingGSTINDisplay.style.display !== 'none') {
+                    if (gstinInputSec) gstinInputSec.style.display = 'none';
+                } else {
+                    if (gstinInputSec) gstinInputSec.style.display = '';
+                }
+
+                // Show billing details card if it has values
+                const hasAddressVal = document.getElementById('billingAddressHidden').value || '';
+                if (hasAddressVal && billingCard) {
+                    billingCard.style.display = '';
+                    billingCard.classList.add('show');
+                    billingCard.classList.remove('hidden');
+                }
+            }
+        } else {
+            // Empty / none selected yet
+            if (companySec) companySec.style.display = 'none';
+            if (gstinInputSec) gstinInputSec.style.display = 'none';
+            if (billingCard) {
+                billingCard.style.display = 'none';
+                billingCard.classList.remove('show');
+                billingCard.classList.add('hidden');
+            }
+        }
+    }
+
+    const accountTypeSelect = document.getElementById('accountType');
+    if (accountTypeSelect) {
+        accountTypeSelect.value = "";
+        accountTypeSelect.addEventListener('change', updateAccountTypeUI);
+    }
+    updateAccountTypeUI();
+
+    const emailField = document.getElementById("emailAddr");
+    const couponSection = document.getElementById("couponSection");
+    const referralSection = document.getElementById("referralSection");
+
+    function toggleCouponVisibility() {
+        const emailValue = emailField?.value?.trim();
+        if (emailValue && emailValue.includes("@")) {
+            if (couponSection) couponSection.style.display = "block";
+            if (referralSection) referralSection.style.display = "block";
+        } else {
+            if (couponSection) couponSection.style.display = "none";
+            if (referralSection) referralSection.style.display = "none";
+        }
+    }
+
+    // trigger when user types email
+    emailField?.addEventListener("input", toggleCouponVisibility);
+
+    // trigger when page loads (important for auto-filled values)
+    toggleCouponVisibility();
+
+    // ===============================
+    // COUPON APPLY / REMOVE LOGIC
+    // ===============================
+
+    const applyBtn = document.getElementById("applyCouponBtn");
+    const couponInput = document.getElementById("couponCode");
+    const couponMessage = document.getElementById("couponMessage");
+    const amountField = document.getElementById("amount");
+
+    let originalAmount = parseFloat(pkgAmount || 0);
+    let appliedDiscount = 0;
+
+    console.log("DEBUG: Coupon setup - originalAmount:", originalAmount, "from pkgAmount:", pkgAmount);
+
+    if (applyBtn) applyBtn.dataset.applied = "false";
+
+    // create modal dynamically once
+    const couponModal = document.createElement("div");
+    couponModal.className = "coupon-modal";
+    couponModal.innerHTML = `
+    <div class="coupon-success-card">
+      <div class="coupon-success-icon">✨</div>
+      <div class="coupon-success-title">Coupon Applied Successfully</div>
+      <div class="coupon-success-subtitle">You saved ₹<span id="discAmt">0</span> on this purchase</div>
+      
+      <div class="coupon-success-pricebox">
+        <div class="price-row">
+          <span>Original Price</span>
+          <span id="origAmt">${originalAmount}</span>
+        </div>
+        <div class="price-row discount">
+          <span>Discount Applied</span>
+          <span>- ₹<span id="discAmtInline">0</span></span>
+        </div>
+        <div class="divider"></div>
+        <div class="price-row final">
+          <span>Total Payable</span>
+          <span id="finalAmt">${originalAmount}</span>
+        </div>
+      </div>
+      
+      <button class="coupon-success-btn" onclick="closeCouponModal()">Continue Payment →</button>
+    </div>
+    `;
+
+    document.body.appendChild(couponModal);
+
+    window.closeCouponModal = function () {
+        couponModal.style.display = "none";
+    };
+
+    // ===============================
+    // APPLY BUTTON CLICK
+    // ===============================
+
+    if (applyBtn) {
+        applyBtn.addEventListener("click", async function () {
+            // REMOVE COUPON FLOW
+            if (applyBtn.dataset.applied === "true") {
+                couponInput.value = "";
+                couponMessage.innerHTML = "";
+
+                applyBtn.innerText = "APPLY";
+                applyBtn.dataset.applied = "false";
+                applyBtn.classList.remove("remove-mode");
+
+                appliedDiscount = 0;
+
+                amountField.value = "₹" + originalAmount.toFixed(2);
+                document.getElementById("psTotalPrice").innerText = "₹" + originalAmount.toFixed(2);
+                document.getElementById("couponBreakdown").style.display = "none";
+                return;
+            }
+
+            // APPLY COUPON FLOW
+            const code = couponInput.value.trim();
+            if (!code) {
+                couponMessage.style.color = "#dc2626";
+                couponMessage.innerText = "Enter coupon code";
+                return;
+            }
+
+            couponMessage.style.color = "#64748b";
+            couponMessage.innerText = "Checking coupon...";
+
+            try {
+                const response = await fetch(
+                    `${sysUrl}/api/method/quantbit_payments_platform.api.validate_coupon_code`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        credentials: "include",
+                        body: JSON.stringify({
+                            coupon_code: code,
+                            site: fromSite
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!data.message || data.message.status !== "valid") {
+                    couponMessage.style.color = "#dc2626";
+                    couponMessage.innerText = data.message?.message || "Invalid coupon";
+                    return;
+                }
+
+                // SUCCESS APPLY
+                appliedDiscount = (originalAmount * data.message.discount_percentage) / 100;
+                const finalAmount = originalAmount - appliedDiscount;
+
+                document.getElementById("couponBreakdown").style.display = "block";
+                document.getElementById("bdOriginal").innerText = "₹" + originalAmount.toFixed(2);
+                document.getElementById("bdDiscount").innerText = "- ₹" + appliedDiscount.toFixed(2);
+                document.getElementById("bdFinal").innerText = "₹" + finalAmount.toFixed(2);
+
+                // update sidebar total price
+                document.getElementById("psTotalPrice").innerText = "₹" + finalAmount.toFixed(2);
+
+                couponMessage.style.color = "#10b981";
+                couponMessage.innerText = `Coupon applied! You saved ₹${appliedDiscount.toFixed(2)}`;
+
+                applyBtn.innerText = "REMOVE";
+                applyBtn.classList.add("remove-mode");
+                applyBtn.dataset.applied = "true";
+
+                // update popup values correctly
+                document.getElementById("origAmt").innerText = "₹" + originalAmount.toFixed(2);
+                document.getElementById("discAmt").innerText = "- ₹" + appliedDiscount.toFixed(2);
+                document.getElementById("discAmtInline").innerText = appliedDiscount.toFixed(2);
+                document.getElementById("finalAmt").innerText = "₹" + finalAmount.toFixed(2);
+
+                couponModal.style.display = "flex";
+
+            } catch (err) {
+                couponMessage.style.color = "#dc2626";
+                couponMessage.innerText = "Server error applying coupon";
+                console.error(err);
+            }
+        });
+    }
+
+    // ===============================
+    // REFERRAL CODE VALIDATION LOGIC
+    // ===============================
+
+    const applyReferralBtn = document.getElementById("applyReferralBtn");
+    const referralInput = document.getElementById("referralCode");
+    const referralMessage = document.getElementById("referralMessage");
+
+    if (applyReferralBtn) {
+        applyReferralBtn.dataset.verified = "false";
+        applyReferralBtn.addEventListener("click", async function () {
+            // REMOVE REFERRAL CODE FLOW
+            if (applyReferralBtn.dataset.verified === "true") {
+                referralInput.value = "";
+                referralMessage.innerHTML = "";
+
+                applyReferralBtn.innerText = "VERIFY";
+                applyReferralBtn.dataset.verified = "false";
+                applyReferralBtn.classList.remove("remove-mode");
+                return;
+            }
+
+            // VERIFY REFERRAL CODE FLOW
+            const code = referralInput.value.trim();
+            if (!code) {
+                referralMessage.style.color = "#dc2626";
+                referralMessage.innerText = "Enter referral code";
+                return;
+            }
+
+            referralMessage.style.color = "#64748b";
+            referralMessage.innerText = "Verifying referral code...";
+
+            try {
+                const response = await fetch(
+                    `${sysUrl}/api/method/quantbit_payments_platform.api.validate_referral_code`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            referral_code: code,
+                            site: fromSite
+                        })
+                    }
+                );
+
+                const data = await response.json();
+
+                if (!data.message || data.message.status !== "valid") {
+                    referralMessage.style.color = "#dc2626";
+                    referralMessage.innerText = data.message?.message || "Invalid referral code";
+
+                    applyReferralBtn.dataset.verified = "false";
+                    applyReferralBtn.innerText = "VERIFY";
+                    applyReferralBtn.classList.remove("remove-mode");
+                    return;
+                }
+
+                // Referral code is valid
+                referralMessage.style.color = "#10b981";
+                referralMessage.innerText = `Referral verified! Partner: ${data.message.partner_name}`;
+
+                applyReferralBtn.innerText = "REMOVE";
+                applyReferralBtn.classList.add("remove-mode");
+                applyReferralBtn.dataset.verified = "true";
+
+            } catch (err) {
+                referralMessage.style.color = "#dc2626";
+                referralMessage.innerText = "Server error verifying referral code";
+                console.error(err);
+            }
+        });
+    }
+
+    // Success Celebration
+    function showCelebrationSuccess(invoiceName, grandTotal, paymentInvoiceDetails) {
+        const colors = ['#0f0fbd','#ff6b00','#10b981','#ff8533','#dc2626','#9333ea'];
+        for (let i = 0; i < 60; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.cssText = `left:${Math.random()*100}%;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};animation:confettiFall ${2+Math.random()}s ease-in ${Math.random()*0.4}s forwards;border-radius:${Math.random()>0.5?'50%':'2px'};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;`;
+            document.body.appendChild(c);
+            setTimeout(() => c.remove(), 3500);
+        }
+        let dashboardUrl = fromSite ? (pkgApp ? `${fromSite}/app` : fromSite) : 'plans.html';
+        const overlay = document.createElement('div');
+        overlay.className = 'success-celebration';
+        
+        const card = document.createElement('div');
+        card.className = 'success-card';
+        card.innerHTML = `
+            <div class="success-icon">✨</div>
+            <h1>Payment Successful!</h1>
+            <p class="subtitle">Your package has been activated and your billing account has been updated.</p>
+            <div class="invoice-info">
+                <div class="label">Invoice Number</div>
+                <div class="value">${invoiceName}</div>
+                ${grandTotal ? `<div class="label" style="margin-top:12px">Grand Total</div><div class="value">₹${grandTotal}</div>` : ''}
+            </div>
+            <div class="success-actions">
+                <button class="success-btn primary" onclick="window.location.href='${dashboardUrl}'">View Dashboard</button>
+                <button class="success-btn secondary" onclick="printPaymentInvoiceDetails('${paymentInvoiceDetails || ''}', '${fromSite}')">Download Invoice</button>
+                <button class="success-btn ghost" onclick="this.closest('.success-celebration').remove()">Close</button>
+            </div>`;
+            
+        overlay.appendChild(card);
+        document.body.appendChild(overlay);
+        addCH(card.querySelector('.success-btn.primary'));
+    }
+    window.showCelebrationSuccess = showCelebrationSuccess;
+
+    // Print Payment Invoice Details using Print Format
+    function printPaymentInvoiceDetails(paymentInvoiceDetailsName, fromSiteUrl) {
+        if (!paymentInvoiceDetailsName || !fromSiteUrl) {
+            alert('Invoice details not available for printing.\n\nNote: Document was created but name not received.');
+            return;
+        }
+        const printUrl = `${fromSiteUrl}/api/method/quantbit_billing_platform.quantbit_billing_platform.api.download_payment_invoice?name=${paymentInvoiceDetailsName}`;
+        const printWindow = window.open(printUrl, '_blank');
+        if (!printWindow) {
+            alert('Please allow popups to print the invoice');
+        }
+    }
+    window.printPaymentInvoiceDetails = printPaymentInvoiceDetails;
+
+    // Form Submit - Dynamic + Session Based
+    document.getElementById('paymentForm')?.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const fullName = document.getElementById('fullName')?.value?.trim() || '';
+        const email = document.getElementById('emailAddr')?.value?.trim() || '';
+        const company = document.getElementById('company')?.value?.trim() || '';
+        const finalGSTIN = document.getElementById('gstinInput')?.value?.trim() || document.getElementById('billingGSTINHidden')?.value?.trim() || '';
+
+        const payButton = document.getElementById('payButton');
+        const statusDiv = document.getElementById('paymentStatus');
+
+        if (!fullName || !email) {
+            statusDiv.textContent = 'Full Name and Email are required.';
+            statusDiv.style.color = 'var(--red)';
+            return;
+        }
+
+        payButton.disabled = true;
+        statusDiv.textContent = 'Creating Sales Invoice…';
+        statusDiv.style.color = 'var(--fog)';
+
+        let invoiceAmount = pkgAmount && pkgAmount !== 'TBD' ? (originalAmount - appliedDiscount) : originalAmount;
+        const finalAmountCalculated = originalAmount - appliedDiscount;
+
+        console.log("DEBUG: Creating invoice with amount:", invoiceAmount);
+        console.log("DEBUG: pkgAmount:", pkgAmount);
+        console.log("DEBUG: originalAmount:", originalAmount);
+        console.log("DEBUG: appliedDiscount:", appliedDiscount);
+
+        const invoiceDetails = {
+            customer_name: fullName,
+            customer_email: email,
+            company: company,
+
+            company_address: document.getElementById('billingAddressHidden').value,
+            state: document.getElementById('billingStateHidden').value,
+            city: document.getElementById('billingCityHidden').value,
+            pincode: document.getElementById('billingPincodeHidden').value,
+            address_type: document.getElementById('billingAddressTypeHidden').value || 'Billing',
+
+            original_amount: originalAmount,
+            discount_amount: appliedDiscount || 0,
+            final_amount: finalAmountCalculated || originalAmount,
+            amount: finalAmountCalculated || originalAmount,
+
+            description: `${pkgName} - ${pkgType}`,
+            mode_of_payment: 'Razorpay',
+            currency: 'INR',
+
+            package_name: pkgName,
+            package_type: pkgType,
+            app_name: pkgApp,
+            duration: pkgDays || 0,
+            from_site: fromSite
+        };
+
+        if (finalGSTIN) invoiceDetails.gstin = finalGSTIN;
+
+        // Add referral code if verified
+        const applyReferralBtn = document.getElementById("applyReferralBtn");
+        const referralInput = document.getElementById("referralCode");
+        if (applyReferralBtn && applyReferralBtn.dataset.verified === "true" && referralInput && referralInput.value.trim()) {
+            invoiceDetails.referral_code = referralInput.value.trim();
+        }
+
+        try {
+            console.log("Invoice payload:", invoiceDetails);
+            const createResp = await fetch(`${currentSite}/api/method/quantbit_payments_platform.payments.create_direct_sales_invoice`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ invoice_details: invoiceDetails })
+            });
+
+            const createData = await createResp.json();
+            if (!createData.message) throw new Error('Invoice creation failed');
+
+            const msgObj = createData.message;
+            if (msgObj.message !== 'success') throw new Error(msgObj.error || 'Invoice error');
+
+            const opts = msgObj.razorpay_details;
+
+            statusDiv.textContent = 'Opening Payment Gateway…';
+            statusDiv.style.color = 'var(--emerald)';
+
+            const rzpOptions = {
+                key: opts.api_key,
+                amount: opts.amount,
+                currency: 'INR',
+                name: 'Quantbit',
+                description: opts.title || `${pkgName} Payment`,
+                order_id: opts.order_id,
+                handler: async function(response) {
+                    statusDiv.textContent = 'Verifying Payment…';
+                    statusDiv.style.color = 'var(--fog)';
+
+                    console.log("DEBUG: Calling razorpay_callback with:", {
+                        from_site: fromSite,
+                        package_name: pkgName,
+                        customer_email: email,
+                        sales_invoice: msgObj.sales_invoice.name
+                    });
+
+                    try {
+                        const verifyResp = await fetch(`${currentSite}/api/method/quantbit_payments_platform.payments.razorpay_callback`, {
+                            method: 'POST',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                reference_docname: msgObj.sales_invoice.name,
+                                reference_doctype: 'Sales Invoice',
+                                options: response,
+                                token: opts.token,
+                                from_site: fromSite,
+                                package_name: pkgName,
+                                app_name: pkgApp,
+                                customer_email: email
+                            })
+                        });
+
+                        const verifyData = await verifyResp.json();
+                        console.log('🔍 Full verifyData:', verifyData);
+
+                        const callbackData = verifyData.message || {};
+                        console.log('🔍 Callback Data:', callbackData);
+
+                        let success = callbackData.status === "success";
+                        let invoiceName = msgObj.sales_invoice.name;
+                        let paymentInvoiceDetailsName = callbackData.payment_invoice_details || callbackData?.data?.payment_invoice_details || null;
+
+                        if (success) {
+                            console.log('✅ Success - Payment Invoice Details Name:', paymentInvoiceDetailsName);
+                            statusDiv.textContent = 'Payment Successful';
+                            statusDiv.style.color = 'var(--emerald)';
+                            showCelebrationSuccess(invoiceName, null, paymentInvoiceDetailsName);
+                        } else {
+                            console.log('❌ Verification Failed:', callbackData);
+                            statusDiv.textContent = callbackData.message || 'Payment Verification Failed';
+                            statusDiv.style.color = 'var(--red)';
+                            alert(callbackData.message || 'Payment Verification Failed');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        statusDiv.textContent = 'Verification Error';
+                        statusDiv.style.color = 'var(--red)';
+                    }
+                },
+                prefill: { name: fullName, email },
+                theme: { color: '#2e2ed9' }
+            };
+
+            const rzp = new Razorpay(rzpOptions);
+            rzp.open();
+
+        } catch (err) {
+            statusDiv.textContent = 'Error: ' + err.message;
+            statusDiv.style.color = 'var(--red)';
+            payButton.disabled = false;
+        }
+    });
+});
+</script>
+
+<!-- Secondary Coupon Modal fallback for DOM compliance -->
+<div id="couponModal" class="coupon-modal">
+    <div class="coupon-success-card">
+        <div class="coupon-success-icon">✨</div>
+        <h2 class="coupon-success-title">Coupon Applied!</h2>
+        <div class="coupon-success-pricebox text-left space-y-2">
+            <div class="flex justify-between text-slate-500">
+                <span>Original Amount:</span>
+                <span id="originalAmount" class="font-bold text-slate-700"></span>
+            </div>
+            <div class="flex justify-between text-success font-bold">
+                <span>Discount:</span>
+                <span id="discountAmount"></span>
+            </div>
+            <div class="divider"></div>
+            <div class="flex justify-between text-primary font-black text-lg">
+                <span>Final Amount:</span>
+                <span id="finalAmount"></span>
+            </div>
+        </div>
+        <button class="coupon-success-btn" onclick="closeCouponModal()">Continue</button>
+    </div>
+</div>
+
+</body>
+</html>

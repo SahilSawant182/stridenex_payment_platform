@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Partner Registration — Quantbit Technologies Pvt Ltd</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --ink:        #0a0e27;
+  --ink-2:      #141838;
+  --ink-3:      #1e2245;
+  --fog:        #94a3b8;
+  --mist:       #cbd5e1;
+  --white:      #ffffff;
+  --blue:       #3b82f6;
+  --blue-bright:#60a5fa;
+  --blue-dark:  #2563eb;
+  --blue-glow:  rgba(59,130,246,0.3);
+  --purple:     #8b5cf6;
+  --purple-glow:rgba(139,92,246,0.3);
+  --green:      #10b981;
+  --green-glow: rgba(16,185,129,0.3);
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--ink);
+  color: var(--white);
+  min-height: 100vh;
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* noise overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.6;
+}
+
+/* ── grid pattern ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(59,111,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,111,255,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 70% 70% at 50% 30%, black 30%, transparent 100%);
+}
+
+/* ── cursor ── */
+.cursor-dot {
+  width: 8px; height: 8px; background: var(--blue); border-radius: 50%;
+  position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%); transition: background 0.2s;
+}
+.cursor-ring {
+  width: 36px; height: 36px;
+  border: 1.5px solid rgba(59,111,255,0.5); border-radius: 50%;
+  position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%); transition: width 0.3s, height 0.3s;
+}
+
+/* ── AMBIENT ORBS ── */
+.orb-hero {
+  position: fixed; pointer-events: none;
+  border-radius: 50%; filter: blur(80px); z-index: 0;
+}
+.orb-1 {
+  width: 600px; height: 600px; top: -100px; right: -100px;
+  background: radial-gradient(circle, rgba(59,111,255,0.12) 0%, transparent 70%);
+  animation: driftA 14s ease-in-out infinite;
+}
+.orb-2 {
+  width: 400px; height: 400px; bottom: 10%; left: -80px;
+  background: radial-gradient(circle, rgba(0,212,255,0.08) 0%, transparent 70%);
+  animation: driftB 18s ease-in-out infinite;
+}
+@keyframes driftA { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,40px)} }
+@keyframes driftB { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-30px)} }
+
+/* ── NAVBAR ── */
+.navbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 5%;
+  background: rgba(10,14,39,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(59,130,246,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  display: flex; align-items: center; gap: 0.75rem;
+  text-decoration: none;
+}
+.logo-mark {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 12px;
+  display: grid; place-items: center;
+  font-weight: 700; font-size: 1.4rem;
+  color: white;
+  box-shadow: 0 4px 15px var(--blue-glow);
+}
+.logo-name {
+  font-weight: 700; font-size: 1.15rem;
+  color: white;
+}
+.logo-name span { color: var(--blue-bright); }
+.nav-right { display: flex; align-items: center; gap: 1.5rem; }
+.nav-link {
+  font-size: 0.95rem;
+  color: var(--fog); text-decoration: none;
+  transition: color 0.2s;
+  font-weight: 500;
+}
+.nav-link:hover { color: white; }
+
+/* ── HERO SECTION ── */
+.hero {
+  text-align: center;
+  padding: 4rem 5% 2rem;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(59,130,246,0.15);
+  border: 1px solid rgba(59,130,246,0.3);
+  border-radius: 20px;
+  padding: 0.4rem 1rem;
+  font-size: 0.8rem;
+  color: var(--blue-bright);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, var(--white) 0%, var(--mist) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero p {
+  font-size: 1.1rem;
+  color: var(--fog);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── PROGRESS STEPPER ── */
+.stepper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  padding: 2rem 5%;
+  margin-bottom: 1rem;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.step-number {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.9rem;
+  color: white;
+  box-shadow: 0 4px 12px var(--blue-glow);
+}
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--white);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.step-line {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--purple) 100%);
+  margin: 0 0.5rem;
+}
+.step.completed .step-number {
+  background: linear-gradient(135deg, var(--green), #34d399);
+  box-shadow: 0 4px 12px var(--green-glow);
+}
+.step.completed .step-label {
+  color: var(--green);
+}
+
+/* ── PAGE WRAPPER ── */
+.page {
+  position: relative; z-index: 1;
+  max-width: 1400px; margin: 0 auto;
+  padding: 1rem 5% 4rem;
+}
+
+/*Phone Number Input*/
+
+/* =========================
+   intl-tel-input Styling
+========================= */
+
+.iti {
+    width: 100%;
+}
+
+.iti input {
+    width: 100%;
+    height: 56px;
+    background: rgba(10,14,39,0.85) !important;
+    border: 1px solid rgba(59,130,246,0.25) !important;
+    border-radius: 12px !important;
+    color: #fff !important;
+    font-size: 15px !important;
+    padding-left: 95px !important;
+    transition: all 0.3s ease;
+}
+
+.iti input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important;
+}
+
+/* Selected Flag Area */
+
+.iti__selected-country {
+    background: transparent !important;
+    padding: 0 12px !important;
+    border-radius: 12px 0 0 12px;
+    transition: background 0.2s ease;
+}
+
+.iti__selected-country:hover {
+    background: rgba(59,130,246,0.08) !important;
+}
+
+/* Country Dropdown */
+
+.iti__country-container {
+    z-index: 9999;
+}
+
+.iti__dropdown-content {
+    background: #141838 !important;
+    border: 1px solid rgba(59,130,246,0.25) !important;
+    border-radius: 14px !important;
+    box-shadow:
+        0 10px 40px rgba(0,0,0,0.45),
+        0 0 0 1px rgba(59,130,246,0.08);
+    overflow: hidden;
+}
+
+/* Search Box */
+
+.iti__search-input {
+    background: rgba(10,14,39,0.9) !important;
+    border: 1px solid rgba(59,130,246,0.25) !important;
+    color: white !important;
+    border-radius: 10px !important;
+    padding: 12px 14px !important;
+    margin: 10px !important;
+    width: calc(100% - 20px) !important;
+    outline: none !important;
+}
+
+.iti__search-input:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+
+/* Country List */
+
+.iti__country-list {
+    background: #141838 !important;
+    color: white !important;
+    scrollbar-width: thin;
+    scrollbar-color: #3b82f6 #141838;
+}
+
+/* Country Item */
+
+.iti__country {
+    padding: 12px 14px !important;
+    transition: all 0.2s ease;
+}
+
+.iti__country:hover {
+    background: rgba(59,130,246,0.15) !important;
+}
+
+/* Highlighted Country */
+
+.iti__highlight {
+    background: rgba(59,130,246,0.18) !important;
+}
+
+/* Country Name */
+
+.iti__country-name {
+    color: #fff !important;
+    font-size: 14px;
+}
+
+/* Dial Code */
+
+.iti__dial-code {
+    color: #94a3b8 !important;
+}
+
+/* Scrollbar */
+
+.iti__country-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.iti__country-list::-webkit-scrollbar-track {
+    background: #141838;
+}
+
+.iti__country-list::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 10px;
+}
+
+/* Search Placeholder */
+
+.iti__search-input::placeholder {
+    color: #94a3b8;
+}
+
+/* Fix Dropdown Width */
+
+.iti--container {
+    z-index: 999999 !important;
+}
+
+/* ── SECTIONS GRID ── */
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: start;
+}
+
+/* ── STEP WIZARD ── */
+.step-section {
+  display: none;
+}
+.step-section.active {
+  display: block;
+}
+
+.step-navigation {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 0 2rem;
+}
+
+.step-navigation.active {
+  display: flex;
+}
+
+.step-nav-btn {
+  padding: 0.85rem 2rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.step-nav-btn.prev {
+  background: rgba(59,130,246,0.1);
+  color: var(--blue-bright);
+  border: 1px solid rgba(59,130,246,0.3);
+}
+
+.step-nav-btn.prev:hover {
+  background: rgba(59,130,246,0.2);
+  border-color: rgba(59,130,246,0.5);
+}
+
+.step-nav-btn.next {
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: white;
+  box-shadow: 0 4px 20px var(--blue-glow);
+}
+
+.step-nav-btn.next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px var(--blue-glow);
+}
+
+.step-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── SECTION CARD ── */
+.section-card {
+  background: rgba(20,24,56,0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.4);
+  border-color: rgba(59,130,246,0.4);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(59,130,246,0.15);
+}
+.section-icon {
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25));
+  border: 1px solid rgba(59,130,246,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+  color: var(--blue-bright);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.2);
+}
+.section-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.section-subtitle {
+  font-size: 0.9rem;
+  color: var(--fog);
+  margin-top: 0.35rem;
+  font-weight: 500;
+}
+
+.field-row { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+.field-group { margin-bottom: 1.5rem; flex: 1; }
+
+.field-label {
+  display: block; font-size: 0.9rem; font-weight: 600;
+  color: var(--mist); margin-bottom: 0.65rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.field-group input, .field-group select {
+  width: 100%; padding: 1.1rem 1.3rem; font-size: 0.95rem;
+  border-radius: 10px; border: 1px solid rgba(59,130,246,0.25);
+  background: rgba(10,14,39,0.75); color: var(--white); outline: none;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+.field-group input::placeholder, .field-group select::placeholder { 
+  color: rgba(148,163,184,0.5); 
+}
+.field-group input:hover, .field-group select:hover {
+  border-color: rgba(59,130,246,0.4);
+  background: rgba(20,24,56,0.8);
+}
+.field-group input:focus, .field-group select:focus {
+  border-color: var(--blue);
+  background: rgba(20,24,56,0.85);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+}
+.field-group select option {
+  background: var(--ink-2);
+  color: var(--white);
+}
+
+.optional-badge {
+  display: inline-block; font-size: 0.7rem;
+  color: var(--fog); background: rgba(148,163,184,0.1);
+  border: 1px solid rgba(148,163,184,0.2); border-radius: 4px;
+  padding: 3px 8px; margin-left: 8px; font-weight: 500;
+  letter-spacing: 0; text-transform: none; vertical-align: middle;
+}
+
+/* ── SUBMIT SECTION ── */
+.submit-section {
+  background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15));
+  border: 1px solid rgba(59,130,246,0.25);
+  border-radius: 16px;
+  padding: 2.5rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.submit-btn {
+  width: 100%; max-width: 450px; padding: 1.15rem 2.5rem; font-size: 1.05rem; font-weight: 700;
+  border-radius: 12px; border: none;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+  transition: all 0.3s ease;
+  margin: 0 auto;
+  box-shadow: 0 6px 24px var(--blue-glow);
+  letter-spacing: 0.02em;
+}
+.submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px var(--blue-glow);
+}
+.submit-btn:active { transform: translateY(-1px); }
+
+.submit-note {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--fog);
+}
+
+/* ── MODAL POPUP ── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 14, 39, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.modal {
+  background: linear-gradient(135deg, var(--ink-2) 0%, var(--ink) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+.modal-overlay.active .modal {
+  transform: scale(1) translateY(0);
+}
+.modal-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2.5rem;
+}
+.modal-icon.success {
+  background: linear-gradient(135deg, var(--green), #34d399);
+  box-shadow: 0 8px 30px var(--green-glow);
+}
+.modal-icon.error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.3);
+}
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 1rem;
+}
+.modal-message {
+  font-size: 1rem;
+  color: var(--fog);
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  white-space: pre-line;
+}
+.modal-btn {
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.modal-btn.success {
+  background: linear-gradient(135deg, var(--green), #34d399);
+  color: white;
+  box-shadow: 0 4px 20px var(--green-glow);
+}
+.modal-btn.success:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--green-glow);
+}
+.modal-btn.error {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.3);
+}
+.modal-btn.error:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(239, 68, 68, 0.3);
+}
+
+/* ── FOOTER ── */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(59,130,246,0.1);
+  padding: 2rem 5%;
+  background: rgba(10,14,39,0.5);
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+}
+.footer-copy { font-size: 0.85rem; color: var(--fog); }
+.footer-copy span { color: var(--blue-bright); font-weight: 600; }
+.footer-links { display: flex; gap: 2rem; }
+.footer-links a {
+  font-size: 0.85rem;
+  color: var(--fog); text-decoration: none; transition: color 0.2s;
+  font-weight: 500;
+}
+.footer-links a:hover { color: white; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1200px) {
+  .sections-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .navbar { padding: 0.75rem 4%; }
+  .hero { padding: 3rem 4% 1.5rem; }
+  .hero h1 { font-size: 1.8rem; }
+  .stepper { padding: 1.5rem 4%; }
+  .step-line { width: 30px; }
+  .page { padding: 1rem 4% 3rem; max-width: 100%; }
+  .nav-right .nav-link { display: none; }
+  .sections-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  .section-card { padding: 1.5rem; }
+  .field-group { margin-bottom: 1.25rem; }
+  .field-group input, .field-group select { padding: 0.9rem 1.1rem; font-size: 0.95rem; }
+}
+@media (max-width: 480px) {
+  .hero h1 { font-size: 1.5rem; }
+  .stepper { flex-direction: column; gap: 1rem; }
+  .step-line { display: none; }
+  .footer-inner { flex-direction: column; text-align: center; }
+  .footer-links { justify-content: center; gap: 1.5rem; }
+  .section-card { padding: 1.25rem; }
+  .submit-section { padding: 2rem; }
+  .submit-btn { padding: 1rem 2rem; font-size: 1rem; }
+}
+</style>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/css/intlTelInput.css"
+/>
+</head>
+<body>
+
+<!-- cursor -->
+<div class="cursor-dot" id="cursorDot"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- ambient orbs -->
+<div class="orb-hero orb-1"></div>
+<div class="orb-hero orb-2"></div>
+
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar">
+  <a class="logo" id="logoHomeLink" href="#">
+    <div class="logo-mark" id="logoIcon">Q</div>
+    <span class="logo-name" id="logoText">Quantbit <span>Technologies Pvt Ltd</span></span>
+  </a>
+  <div class="nav-right">
+    <a id="homeLink" href="#" class="nav-link">Home</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO SECTION ═══ -->
+<div class="hero">
+  <div class="hero-badge">
+    <i class="fas fa-sparkles"></i>
+    Partner Portal
+  </div>
+  <h1>Partner Registration</h1>
+  <p>Join our network of trusted partners and grow your business with Quantbit Technologies</p>
+</div>
+
+<!-- ═══ PROGRESS STEPPER ═══ -->
+<div class="stepper">
+  <div class="step">
+    <div class="step-number">1</div>
+    <div class="step-label">Company Info</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-number">2</div>
+    <div class="step-label">Contact Details</div>
+  </div>
+  <div class="step-line"></div>
+  <div class="step">
+    <div class="step-number">3</div>
+    <div class="step-label">Address</div>
+  </div>
+</div>
+
+<!-- ═══ PAGE ═══ -->
+<div class="page">
+
+  <!-- Section 1: Company Information -->
+  <div class="step-section active" id="step-1">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">
+        <i class="fas fa-building"></i>
+      </div>
+      <div>
+        <div class="section-title">Company Information</div>
+        <div class="section-subtitle">Basic details about your business</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Partner Name</label>
+      <input id="supplier_name" placeholder="Acme Pvt. Ltd." />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Partner Company Type</label>
+      <select id="supplier_type">
+        <option value="Company">Company</option>
+        <option value="Individual">Individual</option>
+        <option value="Partnership">Partnership</option>
+      </select>
+    </div>
+
+    <div
+        class="field-group"
+        id="gst-field-group"
+      >
+        <label class="field-label">
+          GST number
+          <span
+            id="gst-optional"
+            class="optional-badge"
+            style="display:none;"
+          >
+            optional
+          </span>
+        </label>
+
+        <input
+          id="gst"
+          placeholder="22AAAAA0000A1Z5"
+          oninput="validateGSTInput(this)"
+        />
+
+        <small
+          id="gst-error"
+          style="
+            color:#ef4444;
+            font-size:0.8rem;
+            margin-top:0.25rem;
+            display:none;
+          "
+        ></small>
+      </div>
+
+    <div class="field-group">
+      <label class="field-label">Territory</label>
+      <select id="territory">
+        <option value="All Territories">All Territories</option>
+        <option value="India" selected>India</option>
+        <option value="Rest Of The World">Rest Of The World</option>
+      </select>
+    </div>
+
+    <!-- Next Button - Right Aligned -->
+  <div style="margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(59,130,246,0.15);">
+    <div style="text-align: right;">
+      <button class="step-nav-btn next" id="nextBtnStep1" onclick="nextStep()">
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  </div>
+  </div>
+  <input type="hidden" id="from_site" />
+
+
+
+  <!-- Section 2: Contact Details -->
+  <div class="step-section" id="step-2">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">
+        <i class="fas fa-address-book"></i>
+      </div>
+      <div>
+        <div class="section-title">Contact Details</div>
+        <div class="section-subtitle">How we can reach you</div>
+      </div>
+    </div>
+
+    <div class="field-group"> 
+      <label class="field-label">Email address</label>
+      <input id="email" type="email" placeholder="rahul@acme.com" />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Mobile Number</label>
+
+      <input
+        id="mobile"
+        type="tel"
+        placeholder="Enter mobile number"
+      />
+
+      <small
+        id="mobile-error"
+        style="
+          color:#ef4444;
+          font-size:0.8rem;
+          display:none;
+          margin-top:4px;
+        "
+      ></small>
+    </div>
+  </div>
+  </div>
+
+  <!-- Step Navigation for Step 2 -->
+<div class="step-navigation" id="step2-nav">
+  <button class="step-nav-btn prev" id="prevBtn" onclick="previousStep()">
+    <i class="fas fa-arrow-left"></i> Previous
+  </button>
+  <button class="step-nav-btn next" id="nextBtn" onclick="nextStep()">
+    Next <i class="fas fa-arrow-right"></i>
+  </button>
+</div>
+
+  <!-- Section 3: Address Information -->
+  <div class="step-section" id="step-3">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+      <div>
+        <div class="section-title">Address Information</div>
+        <div class="section-subtitle">Your business location</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Country</label>
+      <select id="country" onchange="populateStates()">
+        <option value="">Select Country</option>
+        <option value="India">India</option>
+        <option value="United States">United States</option>
+        <option value="United Kingdom">United Kingdom</option>
+        <option value="Australia">Australia</option>
+        <option value="Canada">Canada</option>
+        <option value="Germany">Germany</option>
+        <option value="France">France</option>
+        <option value="Singapore">Singapore</option>
+        <option value="UAE">UAE</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">State</label>
+      <select id="state" onchange="populateCities()">
+        <option value="">Select State</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">City</label>
+      <select id="city">
+        <option value="">Select City</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Address Line 1</label>
+      <input id="address" placeholder="123 MG Road" />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Address Line 2 <span class="optional-badge">optional</span></label>
+      <input id="address_line2" placeholder="Near Central Mall" />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Pincode</label>
+      <input id="pincode" placeholder="411001" />
+    </div>
+  </div>
+  </div>
+
+  <!-- Final Step Navigation -->
+  <div class="step-navigation" id="step3-nav">
+    <button class="step-nav-btn prev" id="prevBtnFinal" onclick="previousStep()">
+      <i class="fas fa-arrow-left"></i> Previous
+    </button>
+    <button class="step-nav-btn next" id="submitBtn" onclick="createPartner()">
+      <i class="fas fa-paper-plane"></i> Submit Registration
+    </button>
+  </div>
+
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-copy">© 2026 <span>Quantbit Technologies Pvt Ltd.</span> All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">GDPR Compliance</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+
+/* ── CURSOR ── */
+const dot = document.getElementById('cursorDot');
+const ring = document.getElementById('cursorRing');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
+(function animCursor(){ 
+  rx+=(mx-rx)*0.15; ry+=(my-ry)*0.15;
+  dot.style.left=mx+'px'; dot.style.top=my+'px';
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(animCursor); 
+})();
+
+let currentStep = 1;
+const totalSteps = 3;
+
+/* Get from_site from URL */
+const urlParams = new URLSearchParams(window.location.search);
+
+/* Main ERP / Portal Site */
+let ERPNextSite = window.location.origin;
+
+/* Billing Site (where Billing Settings exists) - from from_site parameter */
+let BillingSite = urlParams.get('from_site');
+
+/* fallback */
+if (!BillingSite) {
+  BillingSite = ERPNextSite;
+}
+
+/* remove trailing slash */
+if (BillingSite.endsWith('/')) {
+  BillingSite = BillingSite.slice(0, -1);
+}
+
+if (ERPNextSite.endsWith('/')) {
+  ERPNextSite = ERPNextSite.slice(0, -1);
+}
+
+function getBillingSite() {
+  return BillingSite;
+}
+
+// fallback to current origin if not passed
+if (!ERPNextSite) {
+  ERPNextSite = window.location.origin;
+}
+
+// remove trailing slash
+if (ERPNextSite.endsWith('/')) {
+  ERPNextSite = ERPNextSite.slice(0, -1);
+}
+
+function getFromSite() {
+  return ERPNextSite;
+}
+
+/* ── HOME / LOGO REDIRECTION ── */
+const targetHomeUrl = BillingSite || window.location.origin;
+
+const homeLink = document.getElementById('homeLink');
+const logoHomeLink = document.getElementById('logoHomeLink');
+
+if (homeLink) {
+  homeLink.href = targetHomeUrl;
+}
+
+if (logoHomeLink) {
+  logoHomeLink.href = targetHomeUrl;
+}
+
+
+let iti;
+
+document.addEventListener('DOMContentLoaded', async function () {
+
+    const supplierType =
+        document.getElementById("supplier_type");
+
+    const gstOptional =
+        document.getElementById("gst-optional");
+
+    const gstFieldGroup =
+        document.getElementById("gst-field-group");
+
+    const gstInput =
+        document.getElementById("gst");
+
+    function toggleGSTField() {
+
+        // Individual → hide GST field completely
+
+        if (supplierType.value === "Individual") {
+
+            gstFieldGroup.style.display = "none";
+
+            gstInput.value = "";
+
+            document.getElementById("gst-error").style.display =
+                "none";
+
+        }
+
+        // Others → show GST field
+
+        else {
+
+            gstFieldGroup.style.display = "block";
+        }
+    }
+
+    // Initial load
+    toggleGSTField();
+
+    // On change
+    supplierType.addEventListener(
+        "change",
+        toggleGSTField
+    );
+
+    const phoneInput =
+        document.querySelector("#mobile");
+
+    iti = window.intlTelInput(phoneInput, {
+
+        initialCountry: "in",
+
+        separateDialCode: true,
+
+        preferredCountries: [
+            "in",
+            "us",
+            "gb",
+            "ae"
+        ],
+
+        loadUtils: () =>
+            import("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/utils.js")
+    });
+
+    phoneInput.addEventListener("countrychange", function () {
+
+        document.getElementById("mobile-error").style.display = "none";
+
+    });
+
+    console.log("intlTelInput initialized");
+
+    updateNavigation();
+    updateStepper();
+    populateStates();
+});
+
+
+/* Country and State Data */
+const countryStateData = {
+  'India': ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Delhi', 'Puducherry', 'Chandigarh', 'Jammu and Kashmir'],
+  'United States': ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'],
+  'United Kingdom': ['England', 'Scotland', 'Wales', 'Northern Ireland'],
+  'Australia': ['New South Wales', 'Victoria', 'Queensland', 'Western Australia', 'South Australia', 'Tasmania', 'Australian Capital Territory', 'Northern Territory'],
+  'Canada': ['Alberta', 'British Columbia', 'Manitoba', 'New Brunswick', 'Newfoundland and Labrador', 'Northwest Territories', 'Nova Scotia', 'Nunavut', 'Ontario', 'Prince Edward Island', 'Quebec', 'Saskatchewan', 'Yukon'],
+  'Germany': ['Baden-Württemberg', 'Bavaria', 'Berlin', 'Brandenburg', 'Bremen', 'Hamburg', 'Hesse', 'Lower Saxony', 'Mecklenburg-Vorpommern', 'North Rhine-Westphalia', 'Rhineland-Palatinate', 'Saarland', 'Saxony', 'Saxony-Anhalt', 'Schleswig-Holstein', 'Thuringia'],
+  'France': ['Auvergne-Rhône-Alpes', 'Bourgogne-Franche-Comté', 'Brittany', 'Centre-Val de Loire', 'Corsica', 'Grand Est', 'Hauts-de-France', 'Île-de-France', 'Normandy', 'Nouvelle-Aquitaine', 'Occitanie', 'Pays de la Loire', 'Provence-Alpes-Côte d\'Azur'],
+  'Singapore': ['Central Region', 'East Region', 'North Region', 'North-East Region', 'West Region'],
+  'UAE': ['Abu Dhabi', 'Ajman', 'Dubai', 'Fujairah', 'Ras Al Khaimah', 'Sharjah', 'Umm Al Quwain'],
+  'Other': ['Other']
+};
+
+/* State and City Data */
+const stateCityData = {
+  'Andhra Pradesh': ['Amaravati', 'Visakhapatnam', 'Vijayawada', 'Guntur', 'Tirupati', 'Kakinada', 'Nellore', 'Kurnool', 'Rajahmundry', 'Kadapa'],
+  'Arunachal Pradesh': ['Itanagar', 'Naharlagun', 'Pasighat', 'Tezpur', 'Bomdila', 'Tawang'],
+  'Assam': ['Guwahati', 'Dispur', 'Silchar', 'Dibrugarh', 'Jorhat', 'Nagaon', 'Tezpur', 'Bongaigaon'],
+  'Bihar': ['Patna', 'Gaya', 'Bhagalpur', 'Muzaffarpur', 'Purnia', 'Darbhanga', 'Bihar Sharif', 'Ara', 'Chapra', 'Hajipur'],
+  'Chhattisgarh': ['Raipur', 'Bilaspur', 'Durg', 'Korba', 'Rajnandgaon', 'Jagdalpur', 'Raigarh', 'Ambikapur'],
+  'Goa': ['Panaji', 'Margao', 'Vasco da Gama', 'Mapusa', 'Ponda'],
+  'Gujarat': ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot', 'Bhavnagar', 'Jamnagar', 'Junagadh', 'Gandhinagar'],
+  'Haryana': ['Chandigarh', 'Gurgaon', 'Faridabad', 'Panipat', 'Ambala', 'Karnal', 'Rohtak', 'Hisar'],
+  'Himachal Pradesh': ['Shimla', 'Dharamshala', 'Manali', 'Kullu', 'Solan', 'Mandi', 'Palampur'],
+  'Jharkhand': ['Ranchi', 'Jamshedpur', 'Dhanbad', 'Bokaro', 'Hazaribagh', 'Deoghar', 'Giridih', 'Dumka'],
+  'Karnataka': ['Bangalore', 'Mysore', 'Hubli', 'Mangalore', 'Belgaum', 'Gulbarga', 'Davanagere', 'Bellary'],
+  'Kerala': ['Thiruvananthapuram', 'Kochi', 'Kozhikode', 'Thrissur', 'Kollam', 'Palakkad', 'Alappuzha', 'Kannur'],
+  'Madhya Pradesh': ['Bhopal', 'Indore', 'Gwalior', 'Jabalpur', 'Ujjain', 'Sagar', 'Dewas', 'Satna'],
+  'Maharashtra': ['Mumbai', 'Pune', 'Nagpur', 'Thane', 'Nashik', 'Aurangabad', 'Solapur', 'Kolhapur'],
+  'Manipur': ['Imphal', 'Thoubal', 'Bishnupur', 'Churachandpur', 'Ukhrul'],
+  'Meghalaya': ['Shillong', 'Tura', 'Cherrapunji', 'Jowai', 'Nongpoh'],
+  'Mizoram': ['Aizawl', 'Lunglei', 'Saiha', 'Champhai', 'Kolasib'],
+  'Nagaland': ['Kohima', 'Dimapur', 'Mokokchung', 'Tuensang', 'Wokha', 'Zunheboto'],
+  'Odisha': ['Bhubaneswar', 'Cuttack', 'Rourkela', 'Berhampur', 'Sambalpur', 'Puri', 'Balasore'],
+  'Punjab': ['Chandigarh', 'Ludhiana', 'Amritsar', 'Jalandhar', 'Patiala', 'Bathinda', 'Mohali'],
+  'Rajasthan': ['Jaipur', 'Jodhpur', 'Udaipur', 'Kota', 'Ajmer', 'Bikaner', 'Alwar', 'Sikar'],
+  'Sikkim': ['Gangtok', 'Namchi', 'Geyzing', 'Mangan', 'Pelling'],
+  'Tamil Nadu': ['Chennai', 'Coimbatore', 'Madurai', 'Tiruchirappalli', 'Salem', 'Tirunelveli', 'Erode', 'Vellore'],
+  'Telangana': ['Hyderabad', 'Warangal', 'Nizamabad', 'Khammam', 'Karimnagar', 'Ramagundam', 'Mahbubnagar'],
+  'Tripura': ['Agartala', 'Dharmanagar', 'Udaipur', 'Kailasahar', 'Belonia'],
+  'Uttar Pradesh': ['Lucknow', 'Kanpur', 'Agra', 'Varanasi', 'Meerut', 'Allahabad', 'Ghaziabad', 'Noida'],
+  'Uttarakhand': ['Dehradun', 'Haridwar', 'Rishikesh', 'Haldwani', 'Roorkee', 'Kashipur'],
+  'West Bengal': ['Kolkata', 'Howrah', 'Durgapur', 'Asansol', 'Siliguri', 'Bardhaman', 'Malda', 'Baharampur'],
+  'Delhi': ['New Delhi', 'North Delhi', 'South Delhi', 'East Delhi', 'West Delhi', 'Central Delhi'],
+  'Puducherry': ['Pondicherry', 'Karaikal', 'Yanam', 'Mahe'],
+  'Chandigarh': ['Chandigarh'],
+  'Jammu and Kashmir': ['Srinagar', 'Jammu', 'Anantnag', 'Baramulla', 'Sopore'],
+  'Alabama': ['Birmingham', 'Montgomery', 'Mobile', 'Huntsville', 'Tuscaloosa'],
+  'Alaska': ['Anchorage', 'Fairbanks', 'Juneau', 'Sitka', 'Ketchikan'],
+  'Arizona': ['Phoenix', 'Tucson', 'Mesa', 'Chandler', 'Glendale'],
+  'Arkansas': ['Little Rock', 'Fort Smith', 'Fayetteville', 'Springdale', 'Jonesboro'],
+  'California': ['Los Angeles', 'San Diego', 'San Jose', 'San Francisco', 'Fresno'],
+  'Colorado': ['Denver', 'Colorado Springs', 'Aurora', 'Fort Collins', 'Lakewood'],
+  'Connecticut': ['Bridgeport', 'New Haven', 'Hartford', 'Stamford', 'Waterbury'],
+  'Delaware': ['Wilmington', 'Dover', 'Newark', 'Middletown', 'Smyrna'],
+  'Florida': ['Jacksonville', 'Miami', 'Tampa', 'Orlando', 'St. Petersburg'],
+  'Georgia': ['Atlanta', 'Augusta', 'Columbus', 'Savannah', 'Athens'],
+  'Hawaii': ['Honolulu', 'Pearl City', 'Hilo', 'Kailua', 'Waipahu'],
+  'Idaho': ['Boise', 'Nampa', 'Meridian', 'Idaho Falls', 'Pocatello'],
+  'Illinois': ['Chicago', 'Aurora', 'Naperville', 'Joliet', 'Rockford'],
+  'Indiana': ['Indianapolis', 'Fort Wayne', 'Evansville', 'South Bend', 'Carmel'],
+  'Iowa': ['Des Moines', 'Cedar Rapids', 'Davenport', 'Sioux City', 'Waterloo'],
+  'Kansas': ['Wichita', 'Overland Park', 'Kansas City', 'Topeka', 'Olathe'],
+  'Kentucky': ['Louisville', 'Lexington-Fayette', 'Bowling Green', 'Owensboro', 'Covington'],
+  'Louisiana': ['New Orleans', 'Baton Rouge', 'Shreveport', 'Lafayette', 'Lake Charles'],
+  'Maine': ['Portland', 'Lewiston', 'Bangor', 'South Portland', 'Auburn'],
+  'Maryland': ['Baltimore', 'Columbia', 'Germantown', 'Silver Spring', 'Waldorf'],
+  'Massachusetts': ['Boston', 'Worcester', 'Springfield', 'Cambridge', 'Lowell'],
+  'Michigan': ['Detroit', 'Grand Rapids', 'Warren', 'Sterling Heights', 'Lansing'],
+  'Minnesota': ['Minneapolis', 'Saint Paul', 'Rochester', 'Duluth', 'Bloomington'],
+  'Mississippi': ['Jackson', 'Gulfport', 'Southaven', 'Hattiesburg', 'Biloxi'],
+  'Missouri': ['Kansas City', 'Saint Louis', 'Springfield', 'Independence', 'Columbia'],
+  'Montana': ['Billings', 'Missoula', 'Great Falls', 'Bozeman', 'Helena'],
+  'Nebraska': ['Omaha', 'Lincoln', 'Bellevue', 'Grand Island', 'Kearney'],
+  'Nevada': ['Las Vegas', 'Henderson', 'Reno', 'North Las Vegas', 'Sparks'],
+  'New Hampshire': ['Manchester', 'Nashua', 'Concord', 'Derry', 'Dover'],
+  'New Jersey': ['Newark', 'Jersey City', 'Paterson', 'Elizabeth', 'Edison'],
+  'New Mexico': ['Albuquerque', 'Las Cruces', 'Rio Rancho', 'Santa Fe', 'Roswell'],
+  'New York': ['New York City', 'Buffalo', 'Rochester', 'Yonkers', 'Syracuse'],
+  'North Carolina': ['Charlotte', 'Raleigh', 'Greensboro', 'Durham', 'Winston-Salem'],
+  'North Dakota': ['Fargo', 'Bismarck', 'Grand Forks', 'Minot', 'West Fargo'],
+  'Ohio': ['Columbus', 'Cleveland', 'Cincinnati', 'Toledo', 'Akron'],
+  'Oklahoma': ['Oklahoma City', 'Tulsa', 'Norman', 'Broken Arrow', 'Edmond'],
+  'Oregon': ['Portland', 'Eugene', 'Salem', 'Gresham', 'Hillsboro'],
+  'Pennsylvania': ['Philadelphia', 'Pittsburgh', 'Allentown', 'Erie', 'Reading'],
+  'Rhode Island': ['Providence', 'Warwick', 'Cranston', 'Pawtucket', 'East Providence'],
+  'South Carolina': ['Columbia', 'Charleston', 'North Charleston', 'Mount Pleasant', 'Rock Hill'],
+  'South Dakota': ['Sioux Falls', 'Rapid City', 'Aberdeen', 'Brookings', 'Watertown'],
+  'Tennessee': ['Nashville', 'Memphis', 'Knoxville', 'Chattanooga', 'Clarksville'],
+  'Texas': ['Houston', 'San Antonio', 'Dallas', 'Austin', 'Fort Worth'],
+  'Utah': ['Salt Lake City', 'West Valley City', 'Provo', 'West Jordan', 'Orem'],
+  'Vermont': ['Burlington', 'Essex', 'South Burlington', 'Colchester', 'Rutland'],
+  'Virginia': ['Virginia Beach', 'Norfolk', 'Chesapeake', 'Richmond', 'Newport News'],
+  'Washington': ['Seattle', 'Spokane', 'Tacoma', 'Vancouver', 'Bellevue'],
+  'West Virginia': ['Charleston', 'Huntington', 'Parkersburg', 'Morgantown', 'Wheeling'],
+  'Wisconsin': ['Milwaukee', 'Madison', 'Green Bay', 'Kenosha', 'Racine'],
+  'Wyoming': ['Cheyenne', 'Casper', 'Laramie', 'Gillette', 'Rock Springs'],
+  'England': ['London', 'Birmingham', 'Manchester', 'Liverpool', 'Leeds'],
+  'Scotland': ['Glasgow', 'Edinburgh', 'Aberdeen', 'Dundee', 'Inverness'],
+  'Wales': ['Cardiff', 'Swansea', 'Newport', 'Wrexham', 'Bangor'],
+  'Northern Ireland': ['Belfast', 'Derry', 'Lisburn', 'Newry', 'Bangor'],
+  'New South Wales': ['Sydney', 'Newcastle', 'Wollongong', 'Central Coast', 'Lake Macquarie'],
+  'Victoria': ['Melbourne', 'Geelong', 'Ballarat', 'Bendigo', 'Shepparton'],
+  'Queensland': ['Brisbane', 'Gold Coast', 'Sunshine Coast', 'Townsville', 'Cairns'],
+  'Western Australia': ['Perth', 'Mandurah', 'Rockingham', 'Bunbury', 'Geraldton'],
+  'South Australia': ['Adelaide', 'Mount Gambier', 'Whyalla', 'Murray Bridge', 'Port Augusta'],
+  'Tasmania': ['Hobart', 'Launceston', 'Devonport', 'Burnie', 'Clarence'],
+  'Australian Capital Territory': ['Canberra', 'Queanbeyan', 'Belconnen', 'Woden', 'Tuggeranong'],
+  'Northern Territory': ['Darwin', 'Palmerston', 'Alice Springs', 'Katherine', 'Litchfield'],
+  'Alberta': ['Calgary', 'Edmonton', 'Red Deer', 'Lethbridge', 'Medicine Hat'],
+  'British Columbia': ['Vancouver', 'Victoria', 'Surrey', 'Burnaby', 'Richmond'],
+  'Manitoba': ['Winnipeg', 'Brandon', 'Steinbach', 'Thompson', 'Portage la Prairie'],
+  'New Brunswick': ['Moncton', 'Saint John', 'Fredericton', 'Dieppe', 'Miramichi'],
+  'Newfoundland and Labrador': ['St. John\'s', 'Corner Brook', 'Mount Pearl', 'Conception Bay South', 'Paradise'],
+  'Northwest Territories': ['Yellowknife', 'Hay River', 'Inuvik', 'Fort Smith', 'Norman Wells'],
+  'Nova Scotia': ['Halifax', 'Sydney', 'Dartmouth', 'Truro', 'New Glasgow'],
+  'Nunavut': ['Iqaluit', 'Rankin Inlet', 'Arviat', 'Baker Lake', 'Cambridge Bay'],
+  'Ontario': ['Toronto', 'Ottawa', 'Hamilton', 'Mississauga', 'Brampton'],
+  'Prince Edward Island': ['Charlottetown', 'Summerside', 'Stratford', 'Cornwall', 'Montague'],
+  'Quebec': ['Montreal', 'Quebec City', 'Laval', 'Gatineau', 'Sherbrooke'],
+  'Saskatchewan': ['Saskatoon', 'Regina', 'Prince Albert', 'Moose Jaw', 'Swift Current'],
+  'Yukon': ['Whitehorse', 'Dawson City', 'Watson Lake', 'Haines Junction', 'Carmacks'],
+  'Baden-Württemberg': ['Stuttgart', 'Mannheim', 'Karlsruhe', 'Freiburg', 'Heidelberg'],
+  'Bavaria': ['Munich', 'Nuremberg', 'Augsburg', 'Würzburg', 'Regensburg'],
+  'Berlin': ['Berlin'],
+  'Brandenburg': ['Potsdam', 'Cottbus', 'Brandenburg an der Havel', 'Frankfurt (Oder)', 'Eberswalde'],
+  'Bremen': ['Bremen', 'Bremerhaven'],
+  'Hamburg': ['Hamburg'],
+  'Hesse': ['Frankfurt', 'Wiesbaden', 'Kassel', 'Darmstadt', 'Offenbach'],
+  'Lower Saxony': ['Hanover', 'Braunschweig', 'Osnabrück', 'Oldenburg', 'Göttingen'],
+  'Mecklenburg-Vorpommern': ['Rostock', 'Schwerin', 'Neubrandenburg', 'Greifswald', 'Wismar'],
+  'North Rhine-Westphalia': ['Cologne', 'Düsseldorf', 'Dortmund', 'Essen', 'Bonn'],
+  'Rhineland-Palatinate': ['Mainz', 'Koblenz', 'Trier', 'Ludwigshafen', 'Kaiserslautern'],
+  'Saarland': ['Saarbrücken', 'Neunkirchen', 'Saarlouis', 'St. Ingbert', 'Völklingen'],
+  'Saxony': ['Leipzig', 'Dresden', 'Chemnitz', 'Zwickau', 'Görlitz'],
+  'Saxony-Anhalt': ['Magdeburg', 'Halle (Saale)', 'Dessau-Roßlau', 'Lutherstadt Wittenberg', 'Halberstadt'],
+  'Schleswig-Holstein': ['Kiel', 'Lübeck', 'Flensburg', 'Neumünster', 'Norderstedt'],
+  'Thuringia': ['Erfurt', 'Jena', 'Gera', 'Weimar', 'Gotha'],
+  'Auvergne-Rhône-Alpes': ['Lyon', 'Grenoble', 'Saint-Étienne', 'Clermont-Ferrand', 'Annecy'],
+  'Bourgogne-Franche-Comté': ['Dijon', 'Besançon', 'Belfort', 'Chalon-sur-Saône', 'Auxerre'],
+  'Brittany': ['Rennes', 'Brest', 'Quimper', 'Saint-Malo', 'Vannes'],
+  'Centre-Val de Loire': ['Orléans', 'Tours', 'Bourges', 'Chartres', 'Blois'],
+  'Corsica': ['Ajaccio', 'Bastia', 'Corte', 'Calvi', 'Bonifacio'],
+  'Grand Est': ['Strasbourg', 'Reims', 'Nancy', 'Metz', 'Mulhouse'],
+  'Hauts-de-France': ['Lille', 'Amiens', 'Roubaix', 'Tourcoing', 'Dunkerque'],
+  'Île-de-France': ['Paris', 'Boulogne-Billancourt', 'Saint-Denis', 'Montreuil', 'Versailles'],
+  'Normandy': ['Rouen', 'Le Havre', 'Caen', 'Dieppe', 'Évreux'],
+  'Nouvelle-Aquitaine': ['Bordeaux', 'Toulouse', 'Limoges', 'Poitiers', 'Pau'],
+  'Occitanie': ['Montpellier', 'Toulouse', 'Nîmes', 'Perpignan', 'Toulouse'],
+  'Pays de la Loire': ['Nantes', 'Angers', 'Le Mans', 'Saint-Nazaire', 'La Roche-sur-Yon'],
+  'Provence-Alpes-Côte d\'Azur': ['Marseille', 'Nice', 'Toulon', 'Avignon', 'Aix-en-Provence'],
+  'Central Region': ['Singapore'],
+  'East Region': ['Bedok', 'Tampines', 'Pasir Ris', 'Changi', 'Paya Lebar'],
+  'North Region': ['Woodlands', 'Yishun', 'Sembawang', 'Kranji', 'Mandai'],
+  'North-East Region': ['Hougang', 'Serangoon', 'Punggol', 'Sengkang', 'Ang Mo Kio'],
+  'West Region': ['Jurong East', 'Jurong West', 'Bukit Batok', 'Clementi', 'Choa Chu Kang'],
+  'Abu Dhabi': ['Abu Dhabi City', 'Al Ain', 'Dubai', 'Ras Al Khaimah', 'Sharjah'],
+  'Ajman': ['Ajman City'],
+  'Dubai': ['Dubai City', 'Abu Dhabi', 'Sharjah', 'Ras Al Khaimah'],
+  'Fujairah': ['Fujairah City'],
+  'Ras Al Khaimah': ['Ras Al Khaimah City'],
+  'Sharjah': ['Sharjah City'],
+  'Umm Al Quwain': ['Umm Al Quwain City'],
+  'Other': ['Other']
+};
+
+function populateStates() {
+  const countrySelect = document.getElementById('country');
+  const stateSelect = document.getElementById('state');
+  const selectedCountry = countrySelect.value;
+  
+  // Clear existing options
+  stateSelect.innerHTML = '<option value="">Select State</option>';
+  
+  if (selectedCountry && countryStateData[selectedCountry]) {
+    const states = countryStateData[selectedCountry];
+    states.forEach(state => {
+      const option = document.createElement('option');
+      option.value = state;
+      option.textContent = state;
+      stateSelect.appendChild(option);
+    });
+  }
+  
+  // Clear city dropdown when country changes
+  const citySelect = document.getElementById('city');
+  citySelect.innerHTML = '<option value="">Select City</option>';
+}
+
+function populateCities() {
+  const stateSelect = document.getElementById('state');
+  const citySelect = document.getElementById('city');
+  const selectedState = stateSelect.value;
+  
+  // Clear existing options
+  citySelect.innerHTML = '<option value="">Select City</option>';
+  
+  if (selectedState && stateCityData[selectedState]) {
+    const cities = stateCityData[selectedState];
+    cities.forEach(city => {
+      const option = document.createElement('option');
+      option.value = city;
+      option.textContent = city;
+      citySelect.appendChild(option);
+    });
+  }
+}
+
+function nextStep() {
+  if (currentStep < totalSteps) {
+    if (!validateStep(currentStep)) return;
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    currentStep++;
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    updateNavigation();
+    updateStepper();
+  }
+}
+
+function previousStep() {
+  if (currentStep > 1) {
+    document.getElementById(`step-${currentStep}`).classList.remove('active');
+    currentStep--;
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    updateNavigation();
+    updateStepper();
+  }
+}
+
+function updateNavigation() {
+  const step1Nav = document.getElementById('step1-nav');
+  const step2Nav = document.getElementById('step2-nav');
+  const step3Nav = document.getElementById('step3-nav');
+
+  // Remove active class from all
+  if (step1Nav) step1Nav.classList.remove('active');
+  if (step2Nav) step2Nav.classList.remove('active');
+  if (step3Nav) step3Nav.classList.remove('active');
+
+  if (currentStep === 1) {
+    if (step1Nav) step1Nav.classList.add('active');
+  } 
+  else if (currentStep === 2) {
+    if (step2Nav) step2Nav.classList.add('active');
+    
+    // Enable Previous button on Step 2
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) prevBtn.disabled = false;
+  } 
+  else if (currentStep === 3) {
+    if (step3Nav) step3Nav.classList.add('active');
+  }
+}
+
+function updateStepper() {
+  const steps = document.querySelectorAll('.step');
+  steps.forEach((step, index) => {
+    const stepNum = index + 1;
+    const stepNumberEl = step.querySelector('.step-number');
+    if (stepNum < currentStep) {
+      step.classList.add('completed');
+      stepNumberEl.innerHTML = '<i class="fas fa-check"></i>';
+    } else if (stepNum === currentStep) {
+      step.classList.remove('completed');
+      stepNumberEl.innerHTML = stepNum;
+    } else {
+      step.classList.remove('completed');
+      stepNumberEl.innerHTML = stepNum;
+    }
+  });
+}
+
+function validateGSTInput(input) {
+  const gst = input.value.trim().toUpperCase();
+  const errorEl = document.getElementById('gst-error');
+  
+  // GST format: 2 digits (state code) + 10 alphanumeric + 1 alphanumeric (total 15 characters)
+  const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  
+  if (gst.length > 0 && gst.length !== 15) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'GSTIN must have exactly 15 characters';
+    input.style.borderColor = '#ef4444';
+    return false;
+  } else if (gst.length > 0 && !gstRegex.test(gst)) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'Invalid GST format. Example: 22AAAAA0000A1Z5';
+    input.style.borderColor = '#ef4444';
+    return false;
+  } else if (gst.length > 0) {
+    errorEl.style.display = 'none';
+    input.style.borderColor = 'rgba(59,130,246,0.25)';
+    return true;
+  } else {
+    errorEl.style.display = 'none';
+    input.style.borderColor = 'rgba(59,130,246,0.25)';
+    return true;
+  }
+}
+
+function validateStep(step) {
+
+  let emptyFields = [];
+
+  if (step === 1) {
+
+    const supplierType = document.getElementById('supplier_type').value;
+    const gstInput = document.getElementById('gst');
+    const gstValue = gstInput.value.trim();
+
+    if (!document.getElementById('supplier_name').value.trim()) {
+      emptyFields.push('Supplier Name');
+    }
+
+    if (!supplierType) {
+      emptyFields.push('Supplier Type');
+    }
+
+    // =========================
+    // GST MANDATORY LOGIC
+    // =========================
+
+    // If NOT Individual → GST required
+    if (supplierType !== "Individual") {
+
+      if (!gstValue) {
+
+        showModal(
+          'error',
+          '❌ GST Required',
+          'GST number is mandatory for Company and Partnership'
+        );
+
+        gstInput.focus();
+
+        return false;
+      }
+
+      // Validate GST format
+      if (!validateGSTInput(gstInput)) {
+
+        showModal(
+          'error',
+          '❌ Invalid GST',
+          'Please enter a valid GST number'
+        );
+
+        gstInput.focus();
+
+        return false;
+      }
+    }
+
+    // Individual → GST optional
+    else {
+
+      // If entered then validate
+      if (gstValue && !validateGSTInput(gstInput)) {
+
+        showModal(
+          'error',
+          '❌ Invalid GST',
+          'Please enter a valid GST number'
+        );
+
+        gstInput.focus();
+
+        return false;
+      }
+    }
+  }
+
+  else if (step === 2) {
+
+    const email =
+        document.getElementById('email').value.trim();
+
+    const mobileInput =
+        document.getElementById("mobile");
+
+    const mobileError =
+        document.getElementById("mobile-error");
+
+    const mobile =
+        mobileInput.value.trim();
+
+    // Required validation
+
+    if (!email)
+        emptyFields.push('Email');
+
+    if (!mobile)
+        emptyFields.push('Mobile');
+
+    if (emptyFields.length > 0) {
+
+        showModal(
+            'error',
+            '❌ Missing Fields',
+            `Please fill: ${emptyFields.join(', ')}`
+        );
+
+        return false;
+    }
+
+    // Email validation
+
+    const emailRegex =
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+
+        showModal(
+            'error',
+            '❌ Invalid Email',
+            'Please enter a valid email address'
+        );
+
+        return false;
+    }
+
+    // intlTelInput check
+
+    if (!iti) {
+
+        showModal(
+            'error',
+            '❌ Validation Error',
+            'Phone validator not initialized'
+        );
+
+        return false;
+    }
+
+    // Wait for utils script load
+
+    const fullNumber = iti.getNumber();
+
+    console.log("Formatted Number:", fullNumber);
+
+    const isValid =
+        iti.isValidNumberPrecise();
+
+    console.log("Is Valid:", isValid);
+
+    if (!mobile || !isValid) {
+
+        mobileError.style.display = "block";
+
+        mobileError.innerText =
+            "Please enter valid mobile number";
+
+        mobileInput.focus();
+
+        showModal(
+            'error',
+            '❌ Invalid Mobile',
+            'Please enter a valid mobile number'
+        );
+
+        return false;
+    }
+
+    mobileError.style.display = "none"; 
+  } 
+
+  else if (step === 3) {
+
+    if (!document.getElementById('address').value.trim()) {
+      emptyFields.push('Address Line 1');
+    }
+
+    if (!document.getElementById('city').value.trim()) {
+      emptyFields.push('City');
+    }
+
+    if (!document.getElementById('state').value.trim()) {
+      emptyFields.push('State');
+    }
+
+    if (!document.getElementById('pincode').value.trim()) {
+      emptyFields.push('Pincode');
+    }
+
+    if (!document.getElementById('country').value.trim()) {
+      emptyFields.push('Country');
+    }
+  }
+
+  if (emptyFields.length > 0) {
+
+    showModal(
+      'error',
+      '❌ Missing Fields',
+      `Please fill: ${emptyFields.join(', ')}`
+    );
+
+    return false;
+  }
+
+  return true;
+}
+
+function validateAllFields() {
+  let emptyFields = [];
+  
+  // Step 1 fields
+  if (!document.getElementById('supplier_name').value.trim()) emptyFields.push('Supplier Name');
+  if (!document.getElementById('supplier_type').value) emptyFields.push('Supplier Type');
+  
+  // GST validation
+  const gstInput = document.getElementById('gst');
+  if (gstInput.value.trim()) {
+    if (!validateGSTInput(gstInput)) {
+      showModal('error', '❌ Invalid GST', 'Please enter a valid GST number');
+      return false;
+    }
+  }
+  
+  // Step 2 fields
+  const email = document.getElementById('email').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  if (!email) emptyFields.push('Email');
+  if (!mobile) emptyFields.push('Mobile');
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email && !emailRegex.test(email)) {
+    showModal('error', '❌ Invalid Email', 'Please enter a valid email address');
+    return false;
+  }
+  
+  // Step 3 fields
+  if (!document.getElementById('address').value.trim()) emptyFields.push('Address Line 1');
+  if (!document.getElementById('city').value.trim()) emptyFields.push('City');
+  if (!document.getElementById('state').value.trim()) emptyFields.push('State');
+  if (!document.getElementById('pincode').value.trim()) emptyFields.push('Pincode');
+  if (!document.getElementById('country').value.trim()) emptyFields.push('Country');
+  
+  if (emptyFields.length > 0) {
+    showModal('error', '❌ Missing Fields', `Please fill: ${emptyFields.join(', ')}`);
+    return false;
+  }
+  
+  return true;
+}
+
+function showModal(type, title, message, callback = null) {
+  const overlay = document.getElementById('modalOverlay');
+  const icon = document.getElementById('modalIcon');
+  const titleEl = document.getElementById('modalTitle');
+  const messageEl = document.getElementById('modalMessage');
+  const btn = document.getElementById('modalBtn');
+
+  icon.className = 'modal-icon';
+  btn.className = 'modal-btn';
+
+  if (type === 'success') {
+    icon.classList.add('success');
+    icon.innerHTML = '<i class="fas fa-check"></i>';
+    btn.classList.add('success');
+    btn.innerHTML = 'OK';
+  } else {
+    icon.classList.add('error');
+    icon.innerHTML = '<i class="fas fa-times"></i>';
+    btn.classList.add('error');
+    btn.innerHTML = 'Try Again';
+  }
+
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  overlay.classList.add('active');
+
+  btn.onclick = () => {
+    closeModal();
+    if (callback) callback();
+  };
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+}
+
+async function createPartner() {
+  try {
+    // Validate all fields before submission
+    if (!validateAllFields()) {
+      return;
+    }
+
+    const ERPNextSite = window.location.origin;
+    const customerSite = getBillingSite();
+
+    if (!customerSite) {
+      throw new Error("Billing site information is missing");
+    }
+
+    const data = {
+      supplier_name: document.getElementById("supplier_name").value.trim(),
+      supplier_type: document.getElementById("supplier_type").value,
+      email: document.getElementById("email").value.trim(),
+      mobile: iti.getNumber(),
+      gst: document.getElementById("gst").value.trim(),
+      territory: document.getElementById("territory").value,
+      address: document.getElementById("address").value.trim(),
+      address_line2: document.getElementById("address_line2").value.trim(),
+      city: document.getElementById("city").value.trim(),
+      state: document.getElementById("state").value.trim(),
+      pincode: document.getElementById("pincode").value.trim(),
+      country: document.getElementById("country").value.trim(),
+      address_type: "Billing",
+      from_site: BillingSite,
+      customer_site: ERPNextSite
+    };
+
+    const apiUrl = `${ERPNextSite}/api/method/quantbit_payments_platform.quantbit_payments_platform.create_supplier_sales_partner.create_partner`;
+
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const text = await response.text();
+    let res;
+
+    try {
+      res = JSON.parse(text);
+    } catch (e) {
+      throw new Error("Invalid response from server");
+    }
+
+    const result = res.message || res;
+
+    // ── Duplicate Check Handling ──
+    if (result.status === "error" || result.status === "failed") {
+      const msg = (result.message || "").toLowerCase();
+
+      if (msg.includes("already exists") || 
+          msg.includes("duplicate") || 
+          msg.includes("already registered") ||
+          msg.includes("exists")) {
+        
+        showModal(
+          'error',
+          '⚠️ Already Exists',
+          'A partner with the same GST / Email / Supplier Name already exists.\n\nPlease use a different one or contact support.'
+        );
+        return;
+      }
+    }
+
+    // Success Case
+    if (result.status === "success") {
+      showModal(
+        'success',
+        '🎉 Registration Successful!',
+        result.message || 'Partner created successfully.',
+        () => window.location.href = BillingSite
+      );
+    } 
+    // Other Errors
+    else {
+      showModal(
+        'error',
+        '❌ Registration Failed',
+        result.message || 'Failed to register partner. Please try again.'
+      );
+    }
+
+  } catch (err) {
+    console.error(err);
+    showModal(
+      'error',
+      '❌ Connection Error',
+      err.message || 'Something went wrong. Please check your internet connection.'
+    );
+  }
+}
+</script>
+
+<!-- ═══ MODAL POPUP ═══ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon" id="modalIcon">
+      <i class="fas fa-check"></i>
+    </div>
+    <div class="modal-title" id="modalTitle">Success</div>
+    <div class="modal-message" id="modalMessage">Your request was successful</div>
+    <button class="modal-btn" id="modalBtn" onclick="closeModal()">
+      <i class="fas fa-check"></i> OK
+    </button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.0/build/js/intlTelInput.min.js"></script>
+</body>
+</html>
