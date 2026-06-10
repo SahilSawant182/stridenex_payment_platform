@@ -1281,10 +1281,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             const data = await res.json();
+            console.log("Billing Account Response", data);
             let accounts = [];
             if (Array.isArray(data.message)) {
                 accounts = data.message.map(raw => ({
-                    name: raw.name || '', full_name: raw.full_name || '',
+                    name: raw.name || '', 
+                    full_name: raw.full_name || [raw.first_name, raw.last_name].filter(Boolean).join(' ') || raw.customer_name || raw.contact_person || raw.customer || '',
                     email: raw.name || raw.email || '', company: raw.company || '',
                     company_address: raw.company_address || '', state: raw.state || '',
                     city: raw.city || '', pincode: raw.pincode || '',
