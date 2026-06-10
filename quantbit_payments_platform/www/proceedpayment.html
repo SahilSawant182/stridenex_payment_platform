@@ -984,6 +984,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const rawFromSite = params.get('from_site') || currentSite;
     const fromSite = (rawFromSite && !rawFromSite.startsWith('http://') && !rawFromSite.startsWith('https://')) ? 'https://' + rawFromSite : rawFromSite;
     const sysUrl = params.get('sys_url') || '';
+    const frontendUrl = params.get('frontend_url') || '';
+    window.frontendUrl = frontendUrl;
 
     console.log("DEBUG: URL Parameters:");
     console.log("  pkg_name:", pkgName);
@@ -1646,6 +1648,13 @@ document.addEventListener('DOMContentLoaded', function() {
         overlay.appendChild(card);
         document.body.appendChild(overlay);
         addCH(card.querySelector('.success-btn.primary'));
+
+        // Auto-redirect to React frontend after celebration
+        if (window.frontendUrl) {
+            setTimeout(() => {
+                window.location.href = window.frontendUrl;
+            }, 3000);
+        }
     }
     window.showCelebrationSuccess = showCelebrationSuccess;
 
