@@ -986,6 +986,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const sysUrl = params.get('sys_url') || '';
     const frontendUrl = params.get('frontend_url') || '';
     window.frontendUrl = frontendUrl;
+    const accountTypeParam = params.get('account_type') || '';
+    const customerEmailParam = params.get('customer_email') || '';
+    console.log("Received account_type:", accountTypeParam);
+    console.log("Received customer_email:", customerEmailParam);
 
     console.log("DEBUG: URL Parameters:");
     console.log("  pkg_name:", pkgName);
@@ -1299,7 +1303,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    fetchBillingAccounts();
+    fetchBillingAccounts().then(() => {
+        // Auto-populate account type and email from URL params after accounts are loaded
+        if (accountTypeParam || customerEmailParam) {
+            console.log("Auto triggering account lookup");
+
+            // Auto-select account type dropdown
+            if (accountTypeParam) {
+                const accountTypeEl = document.getElementById('accountType');
+                if (accountTypeEl) {
+                    accountTypeEl.value = accountTypeParam;
+                    accountTypeEl.dispatchEvent(new Event('change'));
+                    console.log("Auto-selected account type:", accountTypeParam);
+                }
+            }
+
+            // Auto-populate email search and trigger existing lookup
+            if (customerEmailParam) {
+                const emailSelectEl = document.getElementById('emailSelect');
+                if (emailSelectEl) {
+                    emailSelectEl.value = customerEmailParam;
+                    emailSelectEl.dispatchEvent(new Event('input'));
+                    console.log("Auto-populated email search:", customerEmailParam);
+                }
+            }
+        }
+    });
     stopShimmer();
 
     function updateAccountTypeUI() {
