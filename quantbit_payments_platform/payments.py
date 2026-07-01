@@ -263,6 +263,46 @@ def razorpay_callback(
                         message=frappe.get_traceback()
                     )
 
+                # ---------------- Subscription History Sync ----------------
+                if from_site:
+                    try:
+                        # Resolve Payment Entry name regardless of whether this is a
+                        # first callback or a Razorpay retry (where pe is never set).
+                        if 'pe' in locals() and pe:
+                            # Freshly created in this callback run
+                            payment_entry_name = pe.name
+                        else:
+                            # PE already existed — fetch it from the reference table
+                            payment_entry_name = frappe.db.get_value(
+                                "Payment Entry Reference",
+                                {
+                                    "reference_doctype": "Sales Invoice",
+                                    "reference_name": reference_docname
+                                },
+                                "parent"
+                            )
+
+                        frappe.log_error(
+                            title="Subscription History — Payment Entry Resolved",
+                            message={
+                                "payment_entry_name": payment_entry_name,
+                                "reference_docname": reference_docname
+                            }
+                        )
+
+                        create_subscription_history_on_source(
+                            from_site=from_site,
+                            sales_invoice=inv,
+                            payment_entry=payment_entry_name,
+                            razorpay_payment_id=razorpay_payment_id
+                        )
+                    except Exception:
+                        frappe.log_error(
+                            title="❌ Subscription History Sync Failed — Exception in callback",
+                            message=frappe.get_traceback()
+                        )
+
+
                 # ---------------- Final Success Response ----------------
                 success_response = {
                     "status": "success",
@@ -627,6 +667,234 @@ def update_payment_invoice_details_on_source(from_site, sales_invoice):
 
     return None
 
+
+def create_subscription_history_on_source(
+    from_site,
+    sales_invoice,
+    payment_entry,
+    razorpay_payment_id
+):
+    """
+    Calls the dedicated whitelisted API on the StrideNex site to create a
+    Subscription History record.  Uses the same login/session approach as
+    update_billing_account_on_source() and update_payment_invoice_details_on_source().
+
+    Failures are logged but never raised so they cannot break the payment flow.
+    """
+    import requests
+    from frappe.utils import flt, today
+    from urllib.parse import urlparse
+
+    frappe.log_error(
+        title="create_subscription_history_on_source CALLED",
+        message=f"""
+        From Site: {from_site}
+        Sales Invoice: {sales_invoice.name if sales_invoice else 'None'}
+        Payment Entry: {payment_entry}
+        Razorpay Payment ID: {razorpay_payment_id}
+        """
+    )
+
+    if not from_site or not sales_invoice:
+        frappe.log_error(
+            title="Subscription History - Missing Required Params",
+            message={
+                "from_site": from_site,
+                "sales_invoice": sales_invoice.name if sales_invoice else None
+            }
+        )
+        return None
+
+    settings = frappe.get_single("Billing Settings")
+    user = settings.get("billing_user")
+    pwd = settings.get_password("billing_user_password")
+
+    if not user or not pwd:
+        frappe.log_error(
+            title="Subscription History - Missing Credentials",
+            message={
+                "user_exists": bool(user),
+                "password_exists": bool(pwd)
+            }
+        )
+        return None
+
+    # Force IPv4 to bypass the IPv6 loopback routing issue in /etc/hosts
+    from urllib3.util import connection
+    import socket
+    orig_allowed_gai_family = connection.allowed_gai_family
+    connection.allowed_gai_family = lambda: socket.AF_INET
+
+    try:
+        # ---- Build payload from Sales Invoice & Payment Entry ----
+        customer_email = (
+            sales_invoice.get("contact_email")
+            or frappe.db.get_value("Customer", sales_invoice.get("customer"), "email_id")
+            or ""
+        )
+
+        customer_name = (
+            sales_invoice.get("customer_name")
+            or frappe.db.get_value("Customer", sales_invoice.get("customer"), "customer_name")
+            or ""
+        )
+
+        site_value = sales_invoice.get("custom_site") or ""
+        if not site_value:
+            parsed = urlparse(from_site)
+            site_value = (
+                parsed.netloc.split('.')[0]
+                if parsed.netloc else from_site
+            )
+
+        # Use actual invoice date; fall back to creation date if posting_date is absent
+        purchase_date = (
+            str(sales_invoice.get("posting_date") or "")
+            or str(sales_invoice.get("creation") or "")[:10]
+            or today()
+        )
+
+        payload = {
+            "customer_email": customer_email,
+            "customer_name": customer_name,
+            "package_name": sales_invoice.get("custom_package_name") or "",
+            "package_type": sales_invoice.get("custom_package_type") or "",
+            "app_name": sales_invoice.get("custom_app_name") or "",
+            "duration": sales_invoice.get("custom_duration") or 0,
+            "amount": flt(sales_invoice.get("rounded_total") or sales_invoice.get("grand_total")),
+            "currency": sales_invoice.get("currency") or "INR",
+            "discount": flt(sales_invoice.get("discount_amount")),
+            "payment_status": "Paid",
+            "purchase_date": purchase_date,
+            "sales_invoice_no": sales_invoice.name,
+            "payment_entry_no": payment_entry or "",
+            "razorpay_payment_id": razorpay_payment_id or "",
+            "site": site_value
+        }
+
+        frappe.log_error(
+            title="Subscription History Payload",
+            message={
+                "from_site": from_site,
+                "payload": payload
+            }
+        )
+
+        # ---- Session & Login ----
+        session = requests.Session()
+        login_url = f"{from_site}/api/method/login"
+
+        login_resp = session.post(
+            login_url,
+            json={"usr": user, "pwd": pwd},
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            timeout=15,
+            verify=False
+        )
+
+        frappe.log_error(
+            title="Subscription History Login Response",
+            message={
+                "status_code": login_resp.status_code,
+                "response": login_resp.text[:1000]
+            }
+        )
+
+        if (
+            login_resp.status_code != 200
+            or "Invalid login credentials" in login_resp.text
+        ):
+            frappe.log_error(
+                title="Subscription History Login Failed",
+                message={
+                    "status_code": login_resp.status_code,
+                    "response": login_resp.text
+                }
+            )
+            return None
+
+        # ---- Call the dedicated whitelisted API on StrideNex ----
+        api_url = (
+            f"{from_site}/api/method/"
+            "quantbit_billing_platform.quantbit_billing_platform.api.create_subscription_history"
+        )
+
+        frappe.log_error(
+            title="Subscription History API URL",
+            message={"api_url": api_url}
+        )
+
+        api_resp = session.post(
+            api_url,
+            json=payload,
+            headers={
+                "Accept": "application/json",
+                "Content-Type": "application/json"
+            },
+            timeout=20,
+            verify=False
+        )
+
+        frappe.log_error(
+            title="Subscription History API Response",
+            message={
+                "status_code": api_resp.status_code,
+                "response": api_resp.text[:1000]
+            }
+        )
+
+        api_resp.raise_for_status()
+
+        result = api_resp.json()
+
+        # ---- Validate the response body (HTTP 200 alone is not sufficient) ----
+        message_data = result.get("message") or {}
+        api_status = message_data.get("status") if isinstance(message_data, dict) else None
+
+        if api_status == "success":
+            frappe.log_error(
+                title="Subscription History Created",
+                message={
+                    "name": message_data.get("name"),
+                    "message": message_data.get("message"),
+                    "result": result
+                }
+            )
+        else:
+            frappe.log_error(
+                title="Subscription History API Reported Non-Success",
+                message={
+                    "api_status": api_status,
+                    "result": result
+                }
+            )
+
+        return result
+
+    except requests.exceptions.RequestException as req_err:
+        frappe.log_error(
+            title="Subscription History Request Exception",
+            message={
+                "error": str(req_err),
+                "traceback": frappe.get_traceback()
+            }
+        )
+
+    except Exception:
+        frappe.log_error(
+            title="Subscription History Exception",
+            message=frappe.get_traceback()
+        )
+
+    finally:
+        connection.allowed_gai_family = orig_allowed_gai_family
+
+    return None
+
+
 import frappe
 from frappe.utils import flt, today
 import re
@@ -637,13 +905,11 @@ def create_direct_sales_invoice(invoice_details=None):
     """
     Creates Sales Invoice from frontend data with GSTIN support.
     Also creates/updates Customer Address with GSTIN.
-
-    
     """
 
     if invoice_details is None:
         invoice_details = {}
-
+    
     # Extract referral code if provided
     referral_code = invoice_details.get("referral_code")
     from_site = invoice_details.get("from_site")
