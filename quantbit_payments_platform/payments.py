@@ -303,6 +303,15 @@ def razorpay_callback(
                         )
 
 
+                # ---------------- Send Payment Success Email ----------------
+                try:
+                    send_payment_success_email(inv, razorpay_payment_id, customer_email)
+                except Exception:
+                    frappe.log_error(
+                        title="❌ Payment Email Exception in Callback",
+                        message=frappe.get_traceback()
+                    )
+
                 # ---------------- Final Success Response ----------------
                 success_response = {
                     "status": "success",
@@ -1364,3 +1373,195 @@ def create_direct_sales_invoice(invoice_details=None):
             }
         )
         return {"error": str(e)}
+
+
+def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=None):
+    if not customer_email:
+        customer_email = (
+            invoice_doc.get("contact_email")
+            or frappe.db.get_value("Customer", invoice_doc.customer, "email_id")
+        )
+
+    if not customer_email:
+        frappe.log_error(
+            title="Payment Email Skipped",
+            message=f"No email found for Invoice {invoice_doc.name}"
+        )
+        return
+
+    try:
+        import copy
+
+        subject  = f"Payment Received – Invoice {invoice_doc.name}"
+        message  = _build_email_html(invoice_doc, razorpay_payment_id)
+
+        # Generate the standard ERPNext invoice PDF from an in-memory doc copy
+        # with custom_site blanked so the Site field never appears in the PDF.
+        doc_for_print = copy.deepcopy(invoice_doc)
+        doc_for_print.custom_site = ""
+        pdf_bytes = frappe.get_print(
+            "Sales Invoice",
+            invoice_doc.name,
+            print_format="Standard",
+            doc=doc_for_print,
+            as_pdf=True
+        )
+
+        # Build a plain-text fallback so spam filters don't flag an HTML-only email
+        customer_name_txt = invoice_doc.customer_name or invoice_doc.customer
+        currency_txt      = invoice_doc.currency or "INR"
+        plain_text = (
+            f"Payment Successful\n\n"
+            f"Dear {customer_name_txt},\n\n"
+            f"We have successfully received your payment of "
+            f"{currency_txt} {invoice_doc.grand_total} against Invoice {invoice_doc.name}.\n\n"
+            f"Transaction ID: {razorpay_payment_id}\n\n"
+            f"Please find your invoice attached.\n\n"
+            f"Thank you!\n"
+        )
+
+        # Fetch the configured outgoing reply-to address (falls back to sender)
+        try:
+            reply_to_addr = (
+                frappe.db.get_single_value("Email Account", "email_id")
+                or frappe.db.get_single_value("System Settings", "email_footer_address")
+                or ""
+            )
+        except Exception:
+            reply_to_addr = ""
+
+        frappe.sendmail(
+            recipients=[customer_email],
+            subject=subject,
+            message=message,
+            text_content=plain_text,
+            reply_to=reply_to_addr or None,
+            reference_doctype="Sales Invoice",
+            reference_name=invoice_doc.name,
+            attachments=[{
+                "fname": f"{invoice_doc.name}.pdf",
+                "fcontent": pdf_bytes
+            }],
+            add_unsubscribe_link=0,
+            headers={
+                "X-Mailer": "StrideNex Payment System",
+                "X-Entity-Ref-ID": invoice_doc.name,
+                "X-Priority": "1",
+            },
+            now=True
+        )
+        frappe.log_error(
+            title="✅ Payment Email Sent",
+            message=f"Sent to {customer_email} for {invoice_doc.name}"
+        )
+    except Exception as e:
+        frappe.log_error(
+            title="❌ Payment Email Failed",
+            message=f"Error: {str(e)}\n{frappe.get_traceback()}"
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Private helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def _build_email_html(invoice_doc, razorpay_payment_id):
+    """Returns a polished, inline-CSS transactional email body."""
+    customer_name = invoice_doc.customer_name or invoice_doc.customer
+    currency      = invoice_doc.currency or "INR"
+    grand_total   = invoice_doc.grand_total or 0
+    invoice_name  = invoice_doc.name
+
+    try:
+        formatted_total = f"{currency} {float(grand_total):,.2f}"
+    except Exception:
+        formatted_total = f"{currency} {grand_total}"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:40px 16px;">
+  <tr><td align="center">
+  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
+
+    <!-- ── Header ── -->
+    <tr>
+      <td style="background:linear-gradient(135deg,#1a237e 0%,#1565c0 100%);padding:36px 40px;text-align:center;">
+        <p style="margin:0;font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">StrideNex</p>
+        <p style="margin:6px 0 0;font-size:12px;font-weight:600;color:#90caf9;text-transform:uppercase;letter-spacing:2px;">Payment Confirmation</p>
+      </td>
+    </tr>
+
+    <!-- ── Success badge ── -->
+    <tr>
+      <td style="background:#ffffff;padding:36px 40px 20px;text-align:center;">
+        <div style="display:inline-block;width:68px;height:68px;background:#e8f5e9;border-radius:50%;line-height:68px;font-size:34px;margin-bottom:18px;">&#10003;</div>
+        <h2 style="margin:0 0 8px;font-size:22px;color:#1a237e;font-weight:700;">Payment Successful!</h2>
+        <p style="margin:0;font-size:15px;color:#607d8b;">Your payment has been received and confirmed.</p>
+      </td>
+    </tr>
+
+    <!-- ── Amount card ── -->
+    <tr>
+      <td style="background:#ffffff;padding:4px 40px 28px;">
+        <div style="background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:12px;padding:22px;text-align:center;">
+          <p style="margin:0 0 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#607d8b;">Amount Paid</p>
+          <p style="margin:0;font-size:36px;font-weight:800;color:#1a237e;">{formatted_total}</p>
+        </div>
+      </td>
+    </tr>
+
+    <!-- ── Greeting ── -->
+    <tr>
+      <td style="background:#ffffff;padding:0 40px 24px;">
+        <p style="margin:0;font-size:15px;color:#37474f;line-height:1.7;">
+          Dear <strong>{customer_name}</strong>,<br>
+          We have successfully received your payment. Your invoice is attached to this email for your records.
+        </p>
+      </td>
+    </tr>
+
+    <!-- ── Details table ── -->
+    <tr>
+      <td style="background:#ffffff;padding:0 40px 36px;">
+        <table width="100%" cellpadding="0" cellspacing="0"
+               style="border:1px solid #e3e8ef;border-radius:10px;overflow:hidden;font-size:14px;">
+          <tr style="background:#f5f7fa;">
+            <td colspan="2" style="padding:11px 18px;font-size:10px;font-weight:700;letter-spacing:1.5px;
+                                    text-transform:uppercase;color:#607d8b;">Payment Details</td>
+          </tr>
+          <tr>
+            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#78909c;">Invoice Number</td>
+            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#1a237e;font-weight:600;">{invoice_name}</td>
+          </tr>
+          <tr style="background:#fafbfc;">
+            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#78909c;">Transaction ID</td>
+            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#1a237e;font-weight:600;
+                        font-family:Consolas,monospace;font-size:13px;">{razorpay_payment_id}</td>
+          </tr>
+          <tr>
+            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#78909c;">Status</td>
+            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;">
+              <span style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:700;
+                            padding:4px 12px;border-radius:20px;letter-spacing:0.5px;">&#10003; PAID</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- ── Footer ── -->
+    <tr>
+      <td style="background:#1a237e;padding:24px 40px;text-align:center;">
+        <p style="margin:0 0 6px;font-size:14px;color:#90caf9;font-weight:600;">Thank you for choosing StrideNex!</p>
+        <p style="margin:0;font-size:11px;color:#5c6bc0;">This is an automated message — please do not reply directly.</p>
+      </td>
+    </tr>
+
+  </table>
+  </td></tr>
+</table>
+</body>
+</html>"""
+
