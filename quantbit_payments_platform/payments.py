@@ -1402,7 +1402,7 @@ def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=
         pdf_bytes = frappe.get_print(
             "Sales Invoice",
             invoice_doc.name,
-            print_format="Standard",
+            print_format="Sales Print",
             doc=doc_for_print,
             as_pdf=True
         )
