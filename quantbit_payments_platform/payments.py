@@ -1434,7 +1434,6 @@ def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=
             recipients=[customer_email],
             subject=subject,
             message=message,
-            text_content=plain_text,
             reply_to=reply_to_addr or None,
             reference_doctype="Sales Invoice",
             reference_name=invoice_doc.name,
@@ -1442,12 +1441,6 @@ def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=
                 "fname": f"{invoice_doc.name}.pdf",
                 "fcontent": pdf_bytes
             }],
-            add_unsubscribe_link=0,
-            headers={
-                "X-Mailer": "StrideNex Payment System",
-                "X-Entity-Ref-ID": invoice_doc.name,
-                "X-Priority": "1",
-            },
             now=True
         )
         frappe.log_error(
@@ -1466,7 +1459,15 @@ def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=
 # ──────────────────────────────────────────────────────────────────────────────
 
 def _build_email_html(invoice_doc, razorpay_payment_id):
-    """Returns a polished, inline-CSS transactional email body."""
+    """
+    Returns a fully email-client-safe HTML email body.
+    Rules:
+      - All styles are 100% inline on every element.
+      - bgcolor attribute used on <td> for Outlook compatibility.
+      - No CSS gradients, box-shadow, border-radius on table elements,
+        or overflow:hidden — these are stripped by Gmail/Outlook.
+      - Nested table layout throughout (no flexbox / grid).
+    """
     customer_name = invoice_doc.customer_name or invoice_doc.customer
     currency      = invoice_doc.currency or "INR"
     grand_total   = invoice_doc.grand_total or 0
@@ -1477,91 +1478,238 @@ def _build_email_html(invoice_doc, razorpay_payment_id):
     except Exception:
         formatted_total = f"{currency} {grand_total}"
 
-    return f"""<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:40px 16px;">
-  <tr><td align="center">
-  <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.10);">
+    # Package name
+    package_name = invoice_doc.get("custom_package_name") or ""
 
-    <!-- ── Header ── -->
-    <tr>
-      <td style="background:linear-gradient(135deg,#1a237e 0%,#1565c0 100%);padding:36px 40px;text-align:center;">
-        <p style="margin:0;font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">StrideNex</p>
-        <p style="margin:6px 0 0;font-size:12px;font-weight:600;color:#90caf9;text-transform:uppercase;letter-spacing:2px;">Payment Confirmation</p>
-      </td>
-    </tr>
+    # Valid till = posting_date + custom_duration (days)
+    valid_till = ""
+    try:
+        duration = int(invoice_doc.get("custom_duration") or 0)
+        if duration and invoice_doc.posting_date:
+            from datetime import timedelta
+            from frappe.utils import getdate
+            valid_till = str(getdate(invoice_doc.posting_date) + timedelta(days=duration))
+    except Exception:
+        pass
 
-    <!-- ── Success badge ── -->
-    <tr>
-      <td style="background:#ffffff;padding:36px 40px 20px;text-align:center;">
-        <div style="display:inline-block;width:68px;height:68px;background:#e8f5e9;border-radius:50%;line-height:68px;font-size:34px;margin-bottom:18px;">&#10003;</div>
-        <h2 style="margin:0 0 8px;font-size:22px;color:#1a237e;font-weight:700;">Payment Successful!</h2>
-        <p style="margin:0;font-size:15px;color:#607d8b;">Your payment has been received and confirmed.</p>
-      </td>
-    </tr>
 
-    <!-- ── Amount card ── -->
-    <tr>
-      <td style="background:#ffffff;padding:4px 40px 28px;">
-        <div style="background:linear-gradient(135deg,#e8eaf6,#e3f2fd);border-radius:12px;padding:22px;text-align:center;">
-          <p style="margin:0 0 6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#607d8b;">Amount Paid</p>
-          <p style="margin:0;font-size:36px;font-weight:800;color:#1a237e;">{formatted_total}</p>
-        </div>
-      </td>
-    </tr>
+    return f"""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Confirmation</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f0f4f8;">
 
-    <!-- ── Greeting ── -->
-    <tr>
-      <td style="background:#ffffff;padding:0 40px 24px;">
-        <p style="margin:0;font-size:15px;color:#37474f;line-height:1.7;">
-          Dear <strong>{customer_name}</strong>,<br>
-          We have successfully received your payment. Your invoice is attached to this email for your records.
-        </p>
-      </td>
-    </tr>
+<table width="100%" cellpadding="0" cellspacing="0" border="0"
+       style="background-color:#f0f4f8;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
 
-    <!-- ── Details table ── -->
-    <tr>
-      <td style="background:#ffffff;padding:0 40px 36px;">
-        <table width="100%" cellpadding="0" cellspacing="0"
-               style="border:1px solid #e3e8ef;border-radius:10px;overflow:hidden;font-size:14px;">
-          <tr style="background:#f5f7fa;">
-            <td colspan="2" style="padding:11px 18px;font-size:10px;font-weight:700;letter-spacing:1.5px;
-                                    text-transform:uppercase;color:#607d8b;">Payment Details</td>
-          </tr>
-          <tr>
-            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#78909c;">Invoice Number</td>
-            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#1a237e;font-weight:600;">{invoice_name}</td>
-          </tr>
-          <tr style="background:#fafbfc;">
-            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#78909c;">Transaction ID</td>
-            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#1a237e;font-weight:600;
-                        font-family:Consolas,monospace;font-size:13px;">{razorpay_payment_id}</td>
-          </tr>
-          <tr>
-            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;color:#78909c;">Status</td>
-            <td style="padding:13px 18px;border-top:1px solid #f0f0f0;">
-              <span style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:700;
-                            padding:4px 12px;border-radius:20px;letter-spacing:0.5px;">&#10003; PAID</span>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+      <table width="600" cellpadding="0" cellspacing="0" border="0"
+             style="width:600px;max-width:600px;">
 
-    <!-- ── Footer ── -->
-    <tr>
-      <td style="background:#1a237e;padding:24px 40px;text-align:center;">
-        <p style="margin:0 0 6px;font-size:14px;color:#90caf9;font-weight:600;">Thank you for choosing StrideNex!</p>
-        <p style="margin:0;font-size:11px;color:#5c6bc0;">This is an automated message — please do not reply directly.</p>
-      </td>
-    </tr>
+        <!-- HEADER -->
+        <tr>
+          <td bgcolor="#1a237e" align="center"
+              style="background-color:#1a237e;padding:32px 40px;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;
+                      font-size:26px;font-weight:bold;color:#ffffff;">
+              StrideNex
+            </p>
+            <p style="margin:6px 0 0;font-family:Arial,Helvetica,sans-serif;
+                      font-size:11px;font-weight:bold;color:#90caf9;
+                      text-transform:uppercase;letter-spacing:2px;">
+              Payment Confirmation
+            </p>
+          </td>
+        </tr>
 
-  </table>
-  </td></tr>
+        <!-- SUCCESS ICON + TITLE -->
+        <tr>
+          <td bgcolor="#ffffff" align="center"
+              style="background-color:#ffffff;padding:36px 40px 16px;">
+            <table cellpadding="0" cellspacing="0" border="0" align="center">
+              <tr>
+                <td bgcolor="#e8f5e9" align="center" width="64" height="64"
+                    style="background-color:#e8f5e9;width:64px;height:64px;
+                           font-family:Arial,sans-serif;font-size:36px;
+                           color:#2e7d32;font-weight:bold;
+                           text-align:center;vertical-align:middle;">
+                  &#10003;
+                </td>
+              </tr>
+            </table>
+            <p style="margin:16px 0 6px;font-family:Arial,Helvetica,sans-serif;
+                      font-size:22px;font-weight:bold;color:#1a237e;">
+              Payment Successful!
+            </p>
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;
+                      font-size:15px;color:#607d8b;">
+              Your payment has been received and confirmed.
+            </p>
+          </td>
+        </tr>
+
+        <!-- AMOUNT HIGHLIGHT -->
+        <tr>
+          <td bgcolor="#ffffff"
+              style="background-color:#ffffff;padding:16px 40px 24px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td bgcolor="#e8eaf6" align="center"
+                    style="background-color:#e8eaf6;padding:20px 24px;">
+                  <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;
+                            font-size:11px;font-weight:bold;color:#607d8b;
+                            text-transform:uppercase;letter-spacing:1.5px;">
+                    Amount Paid
+                  </p>
+                  <p style="margin:0;font-family:Arial,Helvetica,sans-serif;
+                            font-size:34px;font-weight:bold;color:#1a237e;">
+                    {formatted_total}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- GREETING -->
+        <tr>
+          <td bgcolor="#ffffff"
+              style="background-color:#ffffff;padding:0 40px 20px;">
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;
+                      font-size:15px;color:#37474f;line-height:1.7;">
+              Dear <strong>{customer_name}</strong>,<br />
+              We have successfully received your payment.
+              Your invoice is attached to this email for your records.
+            </p>
+          </td>
+        </tr>
+
+        <!-- PAYMENT DETAILS -->
+        <tr>
+          <td bgcolor="#ffffff"
+              style="background-color:#ffffff;padding:0 40px 36px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="border:1px solid #dde3ea;">
+
+              <!-- Header row -->
+              <tr>
+                <td colspan="2" bgcolor="#f5f7fa"
+                    style="background-color:#f5f7fa;padding:10px 16px;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:10px;font-weight:bold;color:#607d8b;
+                           text-transform:uppercase;letter-spacing:1.5px;">
+                  Payment Details
+                </td>
+              </tr>
+
+              <!-- Invoice # -->
+              <tr>
+                <td style="padding:12px 16px;border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#78909c;width:42%;">
+                  Invoice Number
+                </td>
+                <td style="padding:12px 16px;border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#1a237e;font-weight:bold;">
+                  {invoice_name}
+                </td>
+              </tr>
+
+              <!-- Transaction ID -->
+              <tr>
+                <td bgcolor="#fafbfc"
+                    style="background-color:#fafbfc;padding:12px 16px;
+                           border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#78909c;">
+                  Transaction ID
+                </td>
+                <td bgcolor="#fafbfc"
+                    style="background-color:#fafbfc;padding:12px 16px;
+                           border-top:1px solid #efefef;
+                           font-family:'Courier New',Courier,monospace;
+                           font-size:12px;color:#1a237e;font-weight:bold;">
+                  {razorpay_payment_id}
+                </td>
+              </tr>
+
+              <!-- Status -->
+              <tr>
+                <td style="padding:12px 16px;border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#78909c;">
+                  Status
+                </td>
+                <td style="padding:12px 16px;border-top:1px solid #efefef;">
+                  <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td bgcolor="#e8f5e9"
+                          style="background-color:#e8f5e9;padding:4px 12px;
+                                 font-family:Arial,Helvetica,sans-serif;
+                                 font-size:11px;font-weight:bold;
+                                 color:#2e7d32;letter-spacing:0.5px;">
+                        &#10003; PAID
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- Package Name -->
+              {f'''
+              <tr>
+                <td style="padding:12px 16px;border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#78909c;width:42%;">Package</td>
+                <td style="padding:12px 16px;border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#1a237e;font-weight:bold;">{package_name}</td>
+              </tr>''' if package_name else ''}
+
+              <!-- Valid Till -->
+              {f'''
+              <tr>
+                <td bgcolor="#fafbfc" style="background-color:#fafbfc;padding:12px 16px;
+                           border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#78909c;">Valid Till</td>
+                <td bgcolor="#fafbfc" style="background-color:#fafbfc;padding:12px 16px;
+                           border-top:1px solid #efefef;
+                           font-family:Arial,Helvetica,sans-serif;
+                           font-size:14px;color:#1a237e;font-weight:bold;">{valid_till}</td>
+              </tr>''' if valid_till else ''}
+
+            </table>
+          </td>
+        </tr>
+
+        <!-- FOOTER -->
+        <tr>
+          <td bgcolor="#1a237e" align="center"
+              style="background-color:#1a237e;padding:24px 40px;">
+            <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;
+                      font-size:14px;font-weight:bold;color:#90caf9;">
+              Thank you for choosing StrideNex!
+            </p>
+            <p style="margin:0;font-family:Arial,Helvetica,sans-serif;
+                      font-size:11px;color:#7986cb;">
+              This is an automated message &#8212; please do not reply directly.
+            </p>
+          </td>
+        </tr>
+
+      </table>
+
+    </td>
+  </tr>
 </table>
+
 </body>
 </html>"""
 
