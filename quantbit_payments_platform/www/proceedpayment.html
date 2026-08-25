@@ -639,7 +639,25 @@ input[readonly] {
       </div>
       <div class="ps-price-row bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/10 rounded-xl p-3 flex justify-between items-center mt-4">
         <span class="ps-price-label text-[10px] font-bold uppercase tracking-wider text-primary">Total Price</span>
-        <span class="ps-price-val text-xl font-black text-primary" id="psTotalPrice">—</span>
+        <div class="flex flex-col items-end">
+          <span class="ps-price-val text-xl font-black text-primary" id="psTotalPrice">—</span>
+          <span class="text-[10px] font-medium mt-0.5" id="psTaxLabel" style="display:none"></span>
+        </div>
+      </div>
+      <!-- GST breakdown row (shown for exclusive packages) -->
+      <div id="psGstBreakdown" style="display:none" class="mt-2 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+        <div class="flex justify-between mb-1">
+          <span>Base Price</span>
+          <span id="psBasePrice">—</span>
+        </div>
+        <div class="flex justify-between mb-1">
+          <span>GST (18%)</span>
+          <span id="psGstAmount">—</span>
+        </div>
+        <div class="flex justify-between font-semibold text-slate-700 border-t border-slate-200 pt-1">
+          <span>Total Payable</span>
+          <span id="psFinalTotal">—</span>
+        </div>
       </div>
       <div class="ps-row flex justify-between items-center py-2 border-b border-slate-100" id="psDurationRow" style="display:none">
         <span class="ps-row-label flex items-center gap-2 text-slate-500 text-xs font-medium">
@@ -981,6 +999,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const pkgUsers  = params.get('pkg_users');
     const pkgDays   = params.get('pkg_days');
     const pkgAmount = params.get('pkg_amount') || 'TBD';
+    const isTaxInclusiveParam = params.get('is_tax_inclusive');
+    // Default to EXCLUSIVE (false) when param is absent — safer default
+    const isTaxInclusive = isTaxInclusiveParam === '1' || isTaxInclusiveParam === 'true';
+    const taxMultiplier = isTaxInclusive ? 1.0 : 1.18;
     const rawFromSite = params.get('from_site') || currentSite;
     const fromSite = (rawFromSite && !rawFromSite.startsWith('http://') && !rawFromSite.startsWith('https://')) ? 'https://' + rawFromSite : rawFromSite;
     const sysUrl = params.get('sys_url') || '';
@@ -995,6 +1017,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log("  pkg_name:", pkgName);
     console.log("  pkg_type:", pkgType);
     console.log("  pkg_amount:", pkgAmount);
+    console.log("  is_tax_inclusive:", isTaxInclusive);
     console.log("  pkg_days:", pkgDays);
     console.log("  from_site from URL:", params.get('from_site'));
     console.log("  currentSite:", currentSite);
@@ -1021,11 +1044,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let totalStr = 'Contact us', durationStr = '', perDayStr = '';
     if (pkgAmount && pkgAmount !== 'TBD') {
         const amt = parseFloat(pkgAmount);
-        totalStr = `₹${amt.toLocaleString('en-IN')}`;
+        const displayAmt = amt * taxMultiplier;
+        totalStr = `₹${displayAmt.toLocaleString('en-IN')}`;
         if (hasDays) {
             const days = parseInt(pkgDays);
             durationStr = `${days} days`;
-            if (amt > 0 && days > 0) perDayStr = `≈ ₹${Math.round(amt/days*100)/100}/day`;
+            if (amt > 0 && days > 0) perDayStr = `≈ ₹${Math.round(displayAmt/days*100)/100}/day`;
         } else if (isTokenBased) {
             durationStr = 'Usage-based';
             perDayStr = 'No fixed validity';
@@ -1034,6 +1058,30 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('psTotalPrice').textContent = totalStr;
     document.getElementById('amount').value = totalStr + (durationStr ? ` (${durationStr})` : '');
+
+    // Tax label + GST breakdown
+    const taxLabelEl = document.getElementById('psTaxLabel');
+    const gstBreakdown = document.getElementById('psGstBreakdown');
+    if (taxLabelEl) {
+        taxLabelEl.style.display = '';
+        if (isTaxInclusive) {
+            taxLabelEl.textContent = 'inc. 18% GST';
+            taxLabelEl.style.color = '#10b981';
+            if (gstBreakdown) gstBreakdown.style.display = 'none';
+        } else {
+            taxLabelEl.textContent = '+ 18% GST';
+            taxLabelEl.style.color = '#f97316';
+            // Show breakdown only if there is a valid numeric amount
+            if (gstBreakdown && pkgAmount && pkgAmount !== 'TBD') {
+                const baseAmt = parseFloat(pkgAmount);
+                const gstAmt = baseAmt * 0.18;
+                document.getElementById('psBasePrice').textContent = '\u20b9' + baseAmt.toLocaleString('en-IN');
+                document.getElementById('psGstAmount').textContent = '+ \u20b9' + gstAmt.toFixed(2);
+                document.getElementById('psFinalTotal').textContent = '\u20b9' + (baseAmt * 1.18).toLocaleString('en-IN');
+                gstBreakdown.style.display = '';
+            }
+        }
+    }
 
     if (hasDays || isTokenBased) {
         document.getElementById('psDurationRow').style.display = '';
@@ -1453,7 +1501,7 @@ document.addEventListener('DOMContentLoaded', function() {
       <div class="coupon-success-pricebox">
         <div class="price-row">
           <span>Original Price</span>
-          <span id="origAmt">${originalAmount}</span>
+          <span id="origAmt">${(originalAmount * taxMultiplier).toFixed(2)}</span>
         </div>
         <div class="price-row discount">
           <span>Discount Applied</span>
@@ -1462,7 +1510,7 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="divider"></div>
         <div class="price-row final">
           <span>Total Payable</span>
-          <span id="finalAmt">${originalAmount}</span>
+          <span id="finalAmt">${(originalAmount * taxMultiplier).toFixed(2)}</span>
         </div>
       </div>
       
@@ -1493,8 +1541,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 appliedDiscount = 0;
 
-                amountField.value = "₹" + originalAmount.toFixed(2);
-                document.getElementById("psTotalPrice").innerText = "₹" + originalAmount.toFixed(2);
+                const finalAmt = originalAmount * taxMultiplier;
+                amountField.value = "₹" + finalAmt.toFixed(2);
+                document.getElementById("psTotalPrice").innerText = "₹" + finalAmt.toFixed(2);
                 document.getElementById("couponBreakdown").style.display = "none";
                 return;
             }
@@ -1539,25 +1588,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const finalAmount = originalAmount - appliedDiscount;
 
                 document.getElementById("couponBreakdown").style.display = "block";
-                document.getElementById("bdOriginal").innerText = "₹" + originalAmount.toFixed(2);
-                document.getElementById("bdDiscount").innerText = "- ₹" + appliedDiscount.toFixed(2);
-                document.getElementById("bdFinal").innerText = "₹" + finalAmount.toFixed(2);
+                document.getElementById("bdOriginal").innerText = "₹" + (originalAmount * taxMultiplier).toFixed(2);
+                document.getElementById("bdDiscount").innerText = "- ₹" + (appliedDiscount * taxMultiplier).toFixed(2);
+                document.getElementById("bdFinal").innerText = "₹" + (finalAmount * taxMultiplier).toFixed(2);
 
                 // update sidebar total price
-                document.getElementById("psTotalPrice").innerText = "₹" + finalAmount.toFixed(2);
+                document.getElementById("psTotalPrice").innerText = "₹" + (finalAmount * taxMultiplier).toFixed(2);
 
                 couponMessage.style.color = "#10b981";
-                couponMessage.innerText = `Coupon applied! You saved ₹${appliedDiscount.toFixed(2)}`;
+                couponMessage.innerText = `Coupon applied! You saved ₹${(appliedDiscount * taxMultiplier).toFixed(2)}`;
 
                 applyBtn.innerText = "REMOVE";
                 applyBtn.classList.add("remove-mode");
                 applyBtn.dataset.applied = "true";
 
                 // update popup values correctly
-                document.getElementById("origAmt").innerText = "₹" + originalAmount.toFixed(2);
-                document.getElementById("discAmt").innerText = "- ₹" + appliedDiscount.toFixed(2);
-                document.getElementById("discAmtInline").innerText = appliedDiscount.toFixed(2);
-                document.getElementById("finalAmt").innerText = "₹" + finalAmount.toFixed(2);
+                document.getElementById("origAmt").innerText = "₹" + (originalAmount * taxMultiplier).toFixed(2);
+                document.getElementById("discAmt").innerText = "- ₹" + (appliedDiscount * taxMultiplier).toFixed(2);
+                document.getElementById("discAmtInline").innerText = (appliedDiscount * taxMultiplier).toFixed(2);
+                document.getElementById("finalAmt").innerText = "₹" + (finalAmount * taxMultiplier).toFixed(2);
 
                 couponModal.style.display = "flex";
 
@@ -1757,7 +1806,8 @@ document.addEventListener('DOMContentLoaded', function() {
             package_type: pkgType,
             app_name: pkgApp,
             duration: pkgDays || 0,
-            from_site: fromSite
+            from_site: fromSite,
+            is_tax_inclusive: isTaxInclusive ? 1 : 0
         };
 
         if (finalGSTIN) invoiceDetails.gstin = finalGSTIN;

@@ -929,6 +929,10 @@ def create_direct_sales_invoice(invoice_details=None):
 
     frappe.local.flags.ignore_csrf = True
 
+    # Temporarily switch user context to Administrator to avoid Customer/Address permission errors for Guest
+    original_user = frappe.session.user
+    frappe.set_user("Administrator")
+
     try:
         res = frappe._dict()
         frappe.log_error(
@@ -1252,7 +1256,7 @@ def create_direct_sales_invoice(invoice_details=None):
                 })
 
         else:
-            default_item_code = "Miscellaneous Service"
+            default_item_code = "Plans"
 
             if not frappe.db.exists("Item", default_item_code):
                 frappe.throw(f"Item '{default_item_code}' not found")
@@ -1275,21 +1279,28 @@ def create_direct_sales_invoice(invoice_details=None):
             })
 
 
+        # ── Taxes Setup ──────────────────────────────────────────
+        si.tax_category = "In-State"
+        si.taxes_and_charges = "Output GST In-state - QTPL"
+        si.set_missing_values()
+
+        # Set included_in_print_rate based on is_tax_inclusive flag
+        is_tax_inclusive = invoice_details.get("is_tax_inclusive")
+        if is_tax_inclusive is None:
+            is_tax_inclusive = 1
+        else:
+            is_tax_inclusive = int(is_tax_inclusive)
+
+        for tax in si.taxes:
+            tax.included_in_print_rate = is_tax_inclusive
+
         # ── Apply Discount ────────────────────────────────────────
         if discount_amount > 0:
             si.apply_discount_on = "Grand Total"
             si.discount_amount = discount_amount
 
-            si.calculate_taxes_and_totals()
-
-        # ── Taxes ────────────────────────────────────────────────
-        for tax in taxes_list:
-            si.append("taxes", {
-                "charge_type": tax.get("charge_type", "Actual"),
-                "account_head": tax.get("account_head"),
-                "tax_amount": flt(tax.get("tax_amount", 0)),
-                "description": tax.get("description")
-            })
+        # ── Calculate Totals ──────────────────────────────────────
+        si.calculate_taxes_and_totals()
 
         frappe.log_error(
             title="Before Save - Invoice Totals",
@@ -1297,6 +1308,7 @@ def create_direct_sales_invoice(invoice_details=None):
                 "invoice": si.name,
                 "net_total": si.net_total,
                 "total": si.total,
+                "grand_total": si.grand_total,
                 "items_count": len(si.items)
             }
         )
@@ -1373,6 +1385,8 @@ def create_direct_sales_invoice(invoice_details=None):
             }
         )
         return {"error": str(e)}
+    finally:
+        frappe.set_user(original_user)
 
 
 def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=None):
@@ -1491,7 +1505,7 @@ def _build_email_html(invoice_doc, razorpay_payment_id):
             valid_till = str(getdate(invoice_doc.posting_date) + timedelta(days=duration))
     except Exception:
         pass
-
+    
 
     return f"""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
