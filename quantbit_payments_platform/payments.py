@@ -1455,7 +1455,7 @@ def send_payment_success_email(invoice_doc, razorpay_payment_id, customer_email=
                 "fname": f"{invoice_doc.name}.pdf",
                 "fcontent": pdf_bytes
             }],
-            now=True
+            now=False
         )
         frappe.log_error(
             title="✅ Payment Email Sent",
